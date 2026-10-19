@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>zeyt</string>
+    <!-- Languages without a translation get English; German is the source language (Resources/*.lproj). -->
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleDisplayName</key><string>zeyt</string>
+    <key>CFBundleIdentifier</key><string>xyz.oberbichler.zeyt</string>
+    <key>CFBundleExecutable</key><string>zeyt</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleVersion</key><string>0</string>
+    <key>CFBundleShortVersionString</key><string>0.0.0</string>
+    <key>LSMinimumSystemVersion</key><string>14.0</string>
+    <key>LSUIElement</key><true/>
+    <key>LSMultipleInstancesProhibited</key><true/>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+    <key>NSHumanReadableCopyright</key><string>© 2026 Thomas Oberbichler · ISC-Lizenz</string>
+</dict>
+</plist>
