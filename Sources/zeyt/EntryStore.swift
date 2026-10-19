@@ -1,30 +1,50 @@
 import AppKit
 
-/// Absence labels (#urlaub, #krank, #kind-krank). Entries with them are normal entries with times;
-/// the label only adds an icon and color in the overview and stops the prompts while it runs.
-enum Absence: String, CaseIterable, Identifiable {
-    case urlaub
-    case krank
-    case kindKrank = "kind-krank"
+/// What a label stands for, set per label in the labels window. Entries with an absence label are normal
+/// entries with times; the kind only adds an icon and color in the overview and stops the prompts while it runs.
+enum LabelKind: String, Codable, CaseIterable, Identifiable {
+    case work
+    case vacation
+    case sick
+    case childSick = "child-sick"
+    case otherAbsence = "absence"
 
     var id: String { rawValue }
+    var isAbsence: Bool { self != .work }
 
     var title: String {
         switch self {
-        case .urlaub: return L("Urlaub")
-        case .krank: return L("Krank")
-        case .kindKrank: return L("Kind krank")
+        case .work: return L("Arbeit")
+        case .vacation: return L("Urlaub")
+        case .sick: return L("Krank")
+        case .childSick: return L("Kind krank")
+        case .otherAbsence: return L("Sonstige Abwesenheit")
         }
     }
 
     var icon: String {
         switch self {
-        case .urlaub: return "beach.umbrella"
-        case .krank: return "thermometer.medium"
-        case .kindKrank: return "figure.and.child.holdinghands"
+        case .work: return "briefcase"
+        case .vacation: return "beach.umbrella"
+        case .sick: return "thermometer.medium"
+        case .childSick: return "figure.and.child.holdinghands"
+        case .otherAbsence: return "calendar.badge.minus"
         }
     }
+
+    /// Kinds from labels.json, mirrored here by the store so an entry knows its kind on its own.
+    nonisolated(unsafe) static var assigned: [String: LabelKind] = [:]
+
+    /// Before labels had a kind, these names were the absences; they stay so until set otherwise.
+    static let legacy: [String: LabelKind] = ["urlaub": .vacation, "krank": .sick, "kind-krank": .childSick]
+
+    static func of(_ label: String, assigned: [String: LabelKind] = LabelKind.assigned) -> LabelKind {
+        label.isEmpty ? .work : assigned[label] ?? legacy[label] ?? .work
+    }
 }
+
+/// An absence is a label kind other than work.
+typealias Absence = LabelKind
 
 /// One log line: from `date` on you worked on `text` (until the next entry).
 struct Entry: Identifiable, Equatable {
@@ -58,22 +78,47 @@ struct Entry: Identifiable, Equatable {
     /// … or "feierabend". Whether a stop counts as break or end of day is derived (see `Block`).
     var isEndOfDay: Bool { text.lowercased() == "feierabend" }
     var isStop: Bool { isPause || isEndOfDay }
-    var absence: Absence? { isStop ? nil : Absence(rawValue: label) }
+    var absence: Absence? {
+        guard !isStop else { return nil }
+        let kind = LabelKind.of(label)
+        return kind.isAbsence ? kind : nil
+    }
 }
 
-/// Booking target of a label, like the label lines at the end of a zeyt file.
+/// Settings of a label: booking target, kind, and whether its time counts for hours and BT.
 struct LabelInfo: Codable, Equatable {
     var account = ""
     var project = ""
+    /// nil: by name (see `LabelKind.legacy`), else work.
+    var kind: LabelKind?
+    /// nil: counts unless it is an absence.
+    var counts: Bool?
 
     var isEmpty: Bool { account.isEmpty && project.isEmpty }
+
+    init(account: String = "", project: String = "", kind: LabelKind? = nil, counts: Bool? = nil) {
+        self.account = account
+        self.project = project
+        self.kind = kind
+        self.counts = counts
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        account = try c.decodeIfPresent(String.self, forKey: .account) ?? ""
+        project = try c.decodeIfPresent(String.self, forKey: .project) ?? ""
+        kind = try c.decodeIfPresent(LabelKind.self, forKey: .kind)
+        counts = try c.decodeIfPresent(Bool.self, forKey: .counts)
+    }
 }
 
 /// Entries kept in ~/Library/Application Support/zeyt/log.csv, label assignments in labels.json.
 @MainActor
 final class EntryStore: ObservableObject {
     @Published private(set) var entries: [Entry] = []
-    @Published private(set) var labelInfo: [String: LabelInfo] = [:]
+    @Published private(set) var labelInfo: [String: LabelInfo] = [:] {
+        didSet { LabelKind.assigned = labelInfo.compactMapValues(\.kind) }
+    }
     let url: URL
     private let labelsURL: URL
 
@@ -109,7 +154,32 @@ final class EntryStore: ObservableObject {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         url = dir.appendingPathComponent("log.csv")
         labelsURL = dir.appendingPathComponent("labels.json")
+        let fresh = !FileManager.default.fileExists(atPath: labelsURL.path) && !FileManager.default.fileExists(atPath: url.path)
         load()
+        if fresh { seedAbsences() }
+        migrateUncountedSetting()
+    }
+
+    /// New users get the absences in their language, e.g. #vacation, #sick, #child-sick.
+    private func seedAbsences() {
+        for (name, kind) in [(L("urlaub"), LabelKind.vacation), (L("krank"), .sick), (L("kind-krank"), .childSick)] {
+            let label = Rules.tag(name)
+            if !label.isEmpty { labelInfo[label] = LabelInfo(kind: kind) }
+        }
+        saveLabels()
+    }
+
+    /// Before, the labels left out of the hours were a list in the settings ("uncountedLabels").
+    private func migrateUncountedSetting() {
+        let d = UserDefaults.standard
+        guard let old = d.stringArray(forKey: "uncountedLabels") else { return }
+        for label in Set(old).union(LabelKind.legacy.keys) {
+            var info = labelInfo[label] ?? LabelInfo()
+            info.counts = !old.contains(label) ? true : (LabelKind.of(label).isAbsence ? nil : false)
+            labelInfo[label] = info
+        }
+        saveLabels()
+        d.removeObject(forKey: "uncountedLabels")
     }
 
     /// Re-reads the file, e.g. after it was edited by hand.
@@ -177,9 +247,37 @@ final class EntryStore: ObservableObject {
     }
 
     func setInfo(_ info: LabelInfo, for label: String) {
-        labelInfo[label] = LabelInfo(account: info.account.trimmingCharacters(in: .whitespaces),
-                                     project: info.project.trimmingCharacters(in: .whitespaces))
+        var info = info
+        info.account = info.account.trimmingCharacters(in: .whitespaces)
+        info.project = info.project.trimmingCharacters(in: .whitespaces)
+        labelInfo[label] = info
         saveLabels()
+    }
+
+    func kind(_ label: String) -> LabelKind { LabelKind.of(label) }
+
+    /// Sets the kind; absences stop counting for the hours, work counts again (both can be changed after).
+    func setKind(_ kind: LabelKind, for label: String) {
+        var info = labelInfo[label] ?? LabelInfo()
+        info.kind = kind
+        info.counts = nil
+        setInfo(info, for: label)
+    }
+
+    /// Whether the label's time counts for hours and BT (while the setting is on).
+    func counts(_ label: String) -> Bool {
+        labelInfo[label]?.counts ?? !LabelKind.of(label).isAbsence
+    }
+
+    func setCounts(_ counts: Bool, for label: String) {
+        var info = labelInfo[label] ?? LabelInfo()
+        info.counts = counts == !LabelKind.of(label).isAbsence ? nil : counts
+        setInfo(info, for: label)
+    }
+
+    /// Labels in use or registered whose time does not count, sorted.
+    var uncounted: [String] {
+        Set(labels).filter { !counts($0) }.sorted()
     }
 
     /// Adds a label to the registry (also without entries). Returns the normalized name.
@@ -201,13 +299,32 @@ final class EntryStore: ObservableObject {
         entries.filter { $0.label == label }.count
     }
 
+    /// Everything a rename changes, to undo it.
+    struct Snapshot {
+        let entries: [Entry]
+        let labelInfo: [String: LabelInfo]
+    }
+
+    var snapshot: Snapshot { Snapshot(entries: entries, labelInfo: labelInfo) }
+
+    func restore(_ s: Snapshot) {
+        entries = s.entries
+        labelInfo = s.labelInfo
+        save()
+        saveLabels()
+    }
+
     /// Renames a label in all entries. If the new name exists, both are merged;
     /// the existing assignment is kept unless it is incomplete. Returns the new name.
+    /// Keeps a copy of log.csv and labels.json in backups/ first.
     @discardableResult
     func renameLabel(_ old: String, to raw: String) -> String {
         let new = Rules.tag(raw)
         guard !new.isEmpty, new != old else { return old }
-        let info = labelInfo.removeValue(forKey: old) ?? LabelInfo()
+        backup()
+        var info = labelInfo.removeValue(forKey: old) ?? LabelInfo()
+        // A legacy absence name keeps its kind under the new name.
+        if info.kind == nil { info.kind = LabelKind.legacy[old] }
         if let existing = labelInfo[new], !existing.account.isEmpty, !existing.project.isEmpty {
             // keep existing
         } else {
@@ -232,26 +349,26 @@ final class EntryStore: ObservableObject {
     /// Labels that are used or registered but lack account or project.
     var unassignedCount: Int {
         labelStats.filter { s in
-            guard let i = labelInfo[s.label] else { return Absence(rawValue: s.label) == nil }
+            guard !LabelKind.of(s.label).isAbsence else { return false }
+            guard let i = labelInfo[s.label] else { return true }
             return i.account.isEmpty || i.project.isEmpty
         }.count
     }
 
-    /// Reads the label lines of zeyt files: `#label  ACCOUNT  PROJECT ' 12h`. Returns the number of labels imported.
-    @discardableResult
-    func importZeyt(_ urls: [URL]) -> Int {
-        var count = 0
-        for url in urls {
-            guard let content = try? String(contentsOf: url, encoding: .utf8) else { continue }
-            for line in content.split(separator: "\n") {
-                let fields = line.split(separator: "'")[0].split(separator: " ", omittingEmptySubsequences: true)
-                guard fields.count >= 3, fields[0].hasPrefix("#"), fields[0].count > 1 else { continue }
-                labelInfo[String(fields[0].dropFirst())] = LabelInfo(account: String(fields[1]), project: String(fields[2]))
-                count += 1
-            }
+    /// Copies log.csv and labels.json to backups/<time>/ (as ./build.sh install does), the last 30 are kept.
+    private func backup() {
+        let fm = FileManager.default
+        let dir = url.deletingLastPathComponent().appendingPathComponent("backups", isDirectory: true)
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd_HHmmss"
+        let target = dir.appendingPathComponent(f.string(from: Date()), isDirectory: true)
+        try? fm.createDirectory(at: target, withIntermediateDirectories: true)
+        for file in [url, labelsURL] where fm.fileExists(atPath: file.path) {
+            try? fm.copyItem(at: file, to: target.appendingPathComponent(file.lastPathComponent))
         }
-        saveLabels()
-        return count
+        let all = ((try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []).sorted { $0.path > $1.path }
+        for old in all.dropFirst(30) { try? fm.removeItem(at: old) }
     }
 
     private func saveLabels() {
@@ -378,7 +495,8 @@ final class EntryStore: ObservableObject {
     }
 
     private static func clean(_ text: String) -> String {
-        text.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        let t = text.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        return Rules.stop(t) ?? t
     }
 
     private static func minute(_ date: Date) -> Date {

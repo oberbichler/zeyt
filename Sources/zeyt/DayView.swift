@@ -128,8 +128,12 @@ struct DayView: View {
             conflicts: Set(starts.filter { d in starts.filter { $0 == d }.count > 1 }))
     }
 
+    /// Labels left out of hours and BT, while that setting is on.
+    private var uncounted: Set<String> { state.uncountedEnabled ? Set(store.uncounted) : [] }
+
     private func color(_ label: String, _ ctx: Ctx) -> Color {
-        if let a = Absence(rawValue: label) { return a.color }
+        let kind = LabelKind.of(label)
+        if kind.isAbsence { return kind.color }
         return label.isEmpty ? Color.primary.opacity(0.18) : ctx.colors[label] ?? Look.palette[5]
     }
 
@@ -139,7 +143,7 @@ struct DayView: View {
         let strip = stripDays(ctx.now)
         let week = weekDays(ctx.now)
         let weekTotal = week.reduce(0) { $0 + $1.worked }
-        let dayTotal = Block.worked(ctx.blocks, uncounted: state.uncounted)
+        let dayTotal = Block.worked(ctx.blocks, uncounted: uncounted)
         return VStack(spacing: 10) {
             // Title centered; "Heute" and the gear in equally wide side slots.
             ZStack {
@@ -204,7 +208,7 @@ struct DayView: View {
         let entries = store.entries(on: d)
         let tasks = entries.filter { !$0.isStop }
         let absence = tasks.lazy.compactMap(\.absence).first
-        return WeekDay(date: d, worked: Block.worked(Block.compute(entries, now: now), uncounted: state.uncounted),
+        return WeekDay(date: d, worked: Block.worked(Block.compute(entries, now: now), uncounted: uncounted),
                        absence: absence,
                        onlyAbsence: absence != nil && tasks.allSatisfy { $0.absence != nil })
     }
@@ -324,7 +328,7 @@ struct DayView: View {
                     style: .cell,
                     label: Binding(get: { e.isStop ? "" : e.label }, set: { rowLabelChanged(e.id, $0, ctx) }),
                     comment: Binding(get: { e.isStop ? "" : e.title }, set: { rowCommentChanged(e.id, $0) }),
-                    labelPlaceholder: b.kind == .task ? L("unverplant") : b.kind == .pause ? "pause" : "feierabend",
+                    labelPlaceholder: b.kind == .task ? L("unverplant") : b.kind == .pause ? L("pause") : L("feierabend"),
                     showsComment: !e.isStop && (!e.label.isEmpty || !e.title.isEmpty),
                     ghost: ghost(for: key, items),
                     plainWhenEmpty: e.isStop,
@@ -512,7 +516,8 @@ struct DayView: View {
                         heading: ac.typed && !currentLabel(ac.key).isEmpty ? L("Passende Labels") : L("Zuletzt verwendet"),
                         items: items.map {
                             .init(id: $0.id, title: "#" + $0.label, meta: $0.meta,
-                                  color: $0.isNew ? nil : color($0.label, ctx), isNew: $0.isNew)
+                                  color: $0.isNew ? nil : color($0.label, ctx), isNew: $0.isNew,
+                                  icon: LabelKind.of($0.label).isAbsence ? LabelKind.of($0.label).icon : nil)
                         },
                         selected: selected,
                         onPick: { pick(ac.key, items[$0], focusComment: true) },

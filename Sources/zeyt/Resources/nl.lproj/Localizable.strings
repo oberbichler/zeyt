@@ -53,7 +53,6 @@
 "Das Skript lässt sich in den Einstellungen bearbeiten." = "Je kunt het script wijzigen in de instellingen.";
 "Das Skript muss eine Funktion transform(input) definieren." = "Het script moet een functie transform(input) definiëren.";
 "Deine Änderungen am Skript gehen verloren." = "Je wijzigingen in het script gaan verloren.";
-"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste, z. B. Urlaub oder Krank. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "De tijd van deze labels telt niet mee voor de uren en MD van dag, week en weekbalk, bijv. vakantie of ziek. Uitgeschakeld telt alles mee. De export bepaalt dit zelf in het script.";
 "Diese Woche" = "Deze week";
 "Dieser Monat" = "Deze maand";
 "Duplizieren – startet zur Eingabezeit" = "Dupliceer – start op de ingevoerde tijd";
@@ -191,3 +190,15 @@
 "zeyt – Labels" = "zeyt – Labels";
 "Über zeyt" = "Over zeyt";
 "↑↓ · Enter" = "↑↓ · Return";
+"#%1$@ heißt jetzt #%2$@" = "#%1$@ heet nu #%2$@";
+"Arbeit" = "Werk";
+"Art" = "Soort";
+"Sonstige Abwesenheit" = "Andere afwezigheid";
+"Zählt" = "Telt";
+"Zählt zu Stunden und BT" = "Telt mee voor uren en MD";
+"feierabend" = "klaar";
+"kind-krank" = "kind-ziek";
+"krank" = "ziek";
+"pause" = "pauze";
+"urlaub" = "vakantie";
+"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "De tijd van deze labels telt niet mee voor de uren en MD van dag, week en weekbalk. Afwezigheden tellen eerst niet mee; soort en ‘Telt’ zijn ook in het venster ‘Labels’ in te stellen. Uitgeschakeld telt alles mee. De export bepaalt dit zelf in het script.";

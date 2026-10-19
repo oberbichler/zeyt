@@ -4,7 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var state: AppState
     @ObservedObject var api: AgentAPI
-    let store: EntryStore
+    @ObservedObject var store: EntryStore
     @State private var copied = false
     @State private var newUncounted = ""
 
@@ -24,7 +24,7 @@ struct SettingsView: View {
 
     private func addUncounted(_ input: String) {
         let label = Rules.tag(input)
-        if !label.isEmpty, !state.uncountedLabels.contains(label) { state.uncountedLabels.append(label) }
+        if !label.isEmpty { store.setCounts(false, for: label) }
         newUncounted = ""
     }
 
@@ -38,11 +38,15 @@ struct SettingsView: View {
             Section {
                 Toggle(L("Labels nicht mitzählen"), isOn: $state.uncountedEnabled)
                 if state.uncountedEnabled {
-                    ForEach(state.uncountedLabels, id: \.self) { label in
+                    ForEach(store.uncounted, id: \.self) { label in
                         HStack {
+                            let kind = store.kind(label)
+                            if kind.isAbsence {
+                                Image(systemName: kind.icon).foregroundStyle(kind.color).frame(width: 18)
+                            }
                             Text("#" + label)
                             Spacer()
-                            Button { state.uncountedLabels.removeAll { $0 == label } } label: {
+                            Button { store.setCounts(true, for: label) } label: {
                                 Image(systemName: "minus.circle")
                             }
                             .buttonStyle(.borderless)
@@ -53,7 +57,7 @@ struct SettingsView: View {
                         TextField("", text: $newUncounted, prompt: Text(L("#label hinzufügen")))
                             .labelsHidden()
                             .onSubmit { addUncounted(newUncounted) }
-                        let candidates = store.labels.filter { !state.uncountedLabels.contains($0) }
+                        let candidates = store.labels.filter { store.counts($0) }
                         if !candidates.isEmpty {
                             Menu {
                                 ForEach(candidates, id: \.self) { label in Button("#" + label) { addUncounted(label) } }
@@ -69,7 +73,7 @@ struct SettingsView: View {
             } header: {
                 Text(L("Stunden und BT"))
             } footer: {
-                Text(L("Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste, z. B. Urlaub oder Krank. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst."))
+                Text(L("Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst."))
                     .font(.caption).foregroundStyle(.secondary)
             }
 

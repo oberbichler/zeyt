@@ -10,25 +10,15 @@ final class AppState: ObservableObject {
     }
     /// What the reminder does right now; updated by the app delegate.
     @Published var reminderStatus = Reminder.Status.off
-    /// Hours and BT leave out the time of these labels, while switched on (settings).
-    @Published var uncountedEnabled = AppState.loadUncountedEnabled() {
+    /// Hours and BT leave out the labels that don't count (per label, `EntryStore.counts`), while switched on.
+    @Published var uncountedEnabled = AppState.uncountedEnabledSetting {
         didSet { UserDefaults.standard.set(uncountedEnabled, forKey: "uncountedEnabled") }
     }
-    @Published var uncountedLabels = AppState.loadUncountedLabels() {
-        didSet { UserDefaults.standard.set(uncountedLabels, forKey: "uncountedLabels") }
-    }
-    var uncounted: Set<String> { uncountedEnabled ? Set(uncountedLabels) : [] }
-    /// The same, read straight from the settings (agent API).
-    nonisolated static var uncounted: Set<String> { loadUncountedEnabled() ? Set(loadUncountedLabels()) : [] }
 
     /// Off by default; before, a switch "countAbsence" (default on) left out the absences when off.
-    nonisolated private static func loadUncountedEnabled() -> Bool {
+    nonisolated static var uncountedEnabledSetting: Bool {
         let d = UserDefaults.standard
         return d.object(forKey: "uncountedEnabled") as? Bool ?? !(d.object(forKey: "countAbsence") as? Bool ?? true)
-    }
-
-    nonisolated private static func loadUncountedLabels() -> [String] {
-        UserDefaults.standard.stringArray(forKey: "uncountedLabels") ?? Absence.allCases.map(\.rawValue)
     }
     /// Prompts are macOS notifications; false if zeyt may not post them.
     @Published var notificationsAllowed = true

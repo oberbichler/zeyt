@@ -53,7 +53,6 @@
 "Das Skript lässt sich in den Einstellungen bearbeiten." = "Skrypt można edytować w ustawieniach.";
 "Das Skript muss eine Funktion transform(input) definieren." = "Skrypt musi definiować funkcję transform(input).";
 "Deine Änderungen am Skript gehen verloren." = "Twoje zmiany w skrypcie zostaną utracone.";
-"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste, z. B. Urlaub oder Krank. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Czas tych etykiet nie wlicza się do godzin i OD dnia, tygodnia i paska tygodnia, np. urlop lub choroba. Po wyłączeniu liczy się wszystko. Eksport decyduje o tym sam w skrypcie.";
 "Diese Woche" = "Ten tydzień";
 "Dieser Monat" = "Ten miesiąc";
 "Duplizieren – startet zur Eingabezeit" = "Duplikuj – start o czasie z pola";
@@ -191,3 +190,15 @@
 "zeyt – Labels" = "zeyt – Etykiety";
 "Über zeyt" = "O programie zeyt";
 "↑↓ · Enter" = "↑↓ · Return";
+"#%1$@ heißt jetzt #%2$@" = "#%1$@ nazywa się teraz #%2$@";
+"Arbeit" = "Praca";
+"Art" = "Rodzaj";
+"Sonstige Abwesenheit" = "Inna nieobecność";
+"Zählt" = "Liczy się";
+"Zählt zu Stunden und BT" = "Wliczane do godzin i OD";
+"feierabend" = "koniec";
+"kind-krank" = "chore-dziecko";
+"krank" = "choroba";
+"pause" = "przerwa";
+"urlaub" = "urlop";
+"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Czas tych etykiet nie wlicza się do godzin i OD dnia, tygodnia i paska tygodnia. Nieobecności początkowo się nie liczą; rodzaj i „Liczy się” można ustawić także w oknie „Etykiety”. Po wyłączeniu liczy się wszystko. Eksport decyduje o tym sam w skrypcie.";

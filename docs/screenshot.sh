@@ -18,7 +18,7 @@ days = [  # the last four workdays before today, oldest first
      ("12:45", "#internal Interview"), ("14:00", "#webshop Review"), ("17:15", "feierabend")],
     [("08:15", "#api Debug login"), ("11:30", "#webshop Daily"), ("11:45", "pause"),
      ("12:30", "#api Add tests"), ("16:45", "feierabend")],
-    [("09:00", "#urlaub")],
+    [("09:00", "#vacation")],
     [("08:30", "#webshop Sprint Planning"), ("10:30", "#api Deployment"), ("12:15", "pause"),
      ("13:00", "#internal Training"), ("17:00", "feierabend")],
 ]
@@ -39,7 +39,7 @@ with open(f"{out}/log.csv", "w") as f:
 json.dump({"webshop": {"account": "Customer A", "project": "Webshop 2.0"},
            "api": {"account": "Customer B", "project": "Invoicing API"},
            "internal": {"account": "Internal", "project": "General"},
-           "urlaub": {"account": "Internal", "project": "Absence"}}, open(f"{out}/labels.json", "w"))
+           "vacation": {"kind": "vacation"}}, open(f"{out}/labels.json", "w"))
 # Status item as zeyt shows it: label and duration of the running entry
 running = datetime.now() - (now - timedelta(minutes=today[-1][0]))
 minutes = int(running.total_seconds()) // 60

@@ -599,6 +599,8 @@ struct SuggestionList: View {
         let meta: String
         var color: Color?
         var isNew = false
+        /// SF Symbol instead of the color square (absences).
+        var icon: String?
     }
 
     let heading: String
@@ -622,12 +624,17 @@ struct SuggestionList: View {
             ForEach(Array(items.enumerated()), id: \.element.id) { i, item in
                 Button { onPick(i) } label: {
                     HStack(spacing: 8) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(item.color ?? .clear)
-                            .overlay(item.isNew ? RoundedRectangle(cornerRadius: 2)
-                                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [2]))
-                                .foregroundStyle(.tertiary) : nil)
-                            .frame(width: 8, height: 8)
+                        if let icon = item.icon {
+                            Image(systemName: icon).font(.system(size: 10)).foregroundStyle(item.color ?? .secondary)
+                                .frame(width: 8, height: 8)
+                        } else {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(item.color ?? .clear)
+                                .overlay(item.isNew ? RoundedRectangle(cornerRadius: 2)
+                                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [2]))
+                                    .foregroundStyle(.tertiary) : nil)
+                                .frame(width: 8, height: 8)
+                        }
                         VStack(alignment: .leading, spacing: 1) {
                             Text(item.title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
                                 .truncationMode(.middle)

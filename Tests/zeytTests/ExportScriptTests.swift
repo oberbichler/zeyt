@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import zeyt
 
-/// The Chronos template, checked against the cases of zeyt's own export tests (src/export.rs).
+/// The Chronos template, checked against known cases.
 @Suite struct ExportScriptTests {
     private static func at(_ s: String) -> Date {
         let f = DateFormatter()

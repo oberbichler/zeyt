@@ -68,8 +68,16 @@ final class AgentAPI: ObservableObject {
             var info = store.labelInfo[label] ?? LabelInfo()
             if let a = body["account"] as? String { info.account = a }
             if let p = body["project"] as? String { info.project = p }
+            if let k = body["kind"] as? String {
+                guard let kind = LabelKind(rawValue: k) else {
+                    return .error("kind must be work, vacation, sick, child-sick or absence", status: 400)
+                }
+                info.kind = kind
+                info.counts = nil
+            }
+            if let c = body["counts"] as? Bool { info.counts = c }
             store.setInfo(info, for: label)
-            return .json(["label": label, "account": info.account, "project": info.project])
+            return .json(labelJSON(label))
         }
         if parts.count == 3, parts[0] == "api", parts[1] == "entries" {
             switch req.method {
@@ -84,10 +92,7 @@ final class AgentAPI: ObservableObject {
         case ("GET", ["api", "summary"]): return summary(req)
         case ("GET", ["api", "absences"]): return listAbsences(req)
         case ("GET", ["api", "labels"]):
-            return .json(store.labels.map { l -> [String: Any] in
-                let info = store.labelInfo[l] ?? LabelInfo()
-                return ["label": l, "account": info.account, "project": info.project]
-            })
+            return .json(store.labels.map(labelJSON))
         case ("GET", ["api", "report"]): return report(req)
         case ("POST", ["api", "days", "copy"]): return copyDay(req)
         case ("GET", ["api", "export"]): return export(req)
@@ -146,6 +151,12 @@ final class AgentAPI: ObservableObject {
         guard let entry = find(id) else { return .error("no entry with id \(id)", status: 404) }
         store.delete(entry)
         return .json(["ok": true])
+    }
+
+    private func labelJSON(_ label: String) -> [String: Any] {
+        let info = store.labelInfo[label] ?? LabelInfo()
+        return ["label": label, "account": info.account, "project": info.project,
+                "kind": store.kind(label).rawValue, "counts": store.counts(label)]
     }
 
     private func listAbsences(_ req: HTTPRequest) -> HTTPResponse {
@@ -226,7 +237,7 @@ final class AgentAPI: ObservableObject {
             return .error("date must be YYYY-MM-DD", status: 400)
         }
         let now = Date()
-        let uncounted = AppState.uncounted
+        let uncounted: Set<String> = AppState.uncountedEnabledSetting ? Set(store.uncounted) : []
         let dayTotal = Block.worked(Block.compute(store.entries(on: day), now: now), uncounted: uncounted)
         let cal = Calendar(identifier: .iso8601)
         let weekStart = cal.dateInterval(of: .weekOfYear, for: day)!.start
@@ -344,7 +355,7 @@ final class AgentAPI: ObservableObject {
         als Arbeitszeit) und "feierabend" (beendet den Tag). Beides sind Stopps; angezeigt und gezählt wird
         abgeleitet: der letzte Stopp des Tages ist Feierabend, jeder andere eine Pause (siehe "kind").
         Eine Beschreibung ohne Label ist "unverplant" und zählt trotzdem als Arbeitszeit. 1 BT (Bruttotag) = 8 h.
-        Urlaub, Krank und Kind krank sind normale Einträge mit Label #urlaub, #krank, #kind-krank (z. B. 08:00 #urlaub, 16:00 feierabend).
+        Abwesenheiten (Urlaub, Krank, Kind krank, sonstige) sind normale Einträge mit einem Label, dessen Art im Fenster Labels auf Abwesenheit steht (GET /api/labels zeigt kind). Ohne Einstellung gelten #urlaub, #krank, #kind-krank als Abwesenheit.
 
         Auth: Jeder /api-Request braucht den Header  Authorization: Bearer \(token)
         Basis-URL: \(baseURL)
@@ -358,14 +369,14 @@ final class AgentAPI: ObservableObject {
         PATCH  /api/entries/<id>  dieselben Felder, nur die geänderten angeben
         DELETE /api/entries/<id>
         GET    /api/summary?date=YYYY-MM-DD   -> {date, dayMinutes, dayBT, absence, week, weekMinutes, weekBT, weekAbsences}
-                 Minuten/BT enthalten Urlaub, Krank, Kind krank mit ihrer Dauer, außer das ist in den Einstellungen aus.
-        GET    /api/absences?from=YYYY-MM-DD&to=YYYY-MM-DD   -> [{date, kind}]  Tage mit #urlaub/#krank/#kind-krank
+                 Minuten/BT enthalten alle Labels, die zählen (pro Label einstellbar; Abwesenheiten zählen anfangs nicht).
+        GET    /api/absences?from=YYYY-MM-DD&to=YYYY-MM-DD   -> [{date, kind}]  Tage mit Abwesenheit, kind: vacation | sick | child-sick | absence
         POST   /api/days/copy  {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD" | ["YYYY-MM-DD", …], "until"?, "weekends"?, "mode"?}
                  Kopiert alle Einträge eines Tages mit gleichen Zeiten. "to" + "until" = Zeitraum (ohne Wochenenden,
                  außer "weekends": true). Haben Zieltage schon Einträge, ist "mode" Pflicht: "replace", "append" oder
                  "empty" (nur leere Tage), sonst 409 mit {filled: [...]}.
-        GET    /api/labels                    -> [{label, account, project}], zuletzt benutzte zuerst
-        PUT    /api/labels/<label>  {"account"?, "project"?}   Label einem Account/Projekt zuordnen
+        GET    /api/labels                    -> [{label, account, project, kind, counts}], zuletzt benutzte zuerst
+        PUT    /api/labels/<label>  {"account"?, "project"?, "kind"?, "counts"?}   Label zuordnen; kind: work | vacation | sick | child-sick | absence, counts: zählt zu Stunden/BT
         GET    /api/report?from=YYYY-MM-DD&to=YYYY-MM-DD
                  -> {from, to, labels: [{label, account, project, minutes}], accounts: {account: minutes}}
                  label "" = Einträge ohne Label, account "" = nicht zugeordnet

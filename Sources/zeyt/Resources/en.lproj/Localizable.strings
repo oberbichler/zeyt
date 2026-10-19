@@ -53,7 +53,6 @@
 "Das Skript lässt sich in den Einstellungen bearbeiten." = "The script can be edited in Settings.";
 "Das Skript muss eine Funktion transform(input) definieren." = "The script must define a function transform(input).";
 "Deine Änderungen am Skript gehen verloren." = "Your changes to the script will be lost.";
-"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste, z. B. Urlaub oder Krank. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Time with these labels doesn't count toward the hours and PD of day, week and week bar, e.g. vacation or sick. When off, everything counts. The export script decides for itself.";
 "Diese Woche" = "This week";
 "Dieser Monat" = "This month";
 "Duplizieren – startet zur Eingabezeit" = "Duplicate – starts at the entered time";
@@ -191,3 +190,15 @@
 "zeyt – Labels" = "zeyt – Labels";
 "Über zeyt" = "About zeyt";
 "↑↓ · Enter" = "↑↓ · Return";
+"#%1$@ heißt jetzt #%2$@" = "#%1$@ is now #%2$@";
+"Arbeit" = "Work";
+"Art" = "Kind";
+"Sonstige Abwesenheit" = "Other absence";
+"Zählt" = "Counts";
+"Zählt zu Stunden und BT" = "Counts toward hours and PD";
+"feierabend" = "done";
+"kind-krank" = "child-sick";
+"krank" = "sick";
+"pause" = "break";
+"urlaub" = "vacation";
+"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Time with these labels doesn't count toward the hours and PD of day, week and week bar. Absences don't count at first; kind and “Counts” can also be set in the “Labels” window. When off, everything counts. The export script decides for itself.";

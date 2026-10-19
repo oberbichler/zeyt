@@ -1,11 +1,13 @@
 import SwiftUI
 
-extension Absence {
+extension LabelKind {
     var color: Color {
         switch self {
-        case .urlaub: return .teal
-        case .krank: return .red
-        case .kindKrank: return .orange
+        case .work: return .secondary
+        case .vacation: return .teal
+        case .sick: return .red
+        case .childSick: return .orange
+        case .otherAbsence: return .indigo
         }
     }
 }

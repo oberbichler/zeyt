@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Label editor: search or create, rename in place, assign account and project, hours per period.
+/// Label editor: search or create, rename in place, assign account, project and kind, choose whether it
+/// counts for the hours, hours per period.
 struct LabelsView: View {
     @ObservedObject var store: EntryStore
     @State private var query = ""
@@ -61,10 +62,11 @@ struct LabelsView: View {
     enum Target: Hashable { case account(String), project(String) }
 
     struct Toast: Equatable {
-        let label: String
-        let info: LabelInfo
-        let used: Bool
+        let message: String
+        let undo: () -> Void
         let id = UUID()
+
+        static func == (a: Toast, b: Toast) -> Bool { a.id == b.id }
     }
 
     var body: some View {
@@ -100,7 +102,7 @@ struct LabelsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .overlayPreferenceValue(AnchorKey.self) { anchor in options(anchor) }
         }
-        .frame(minWidth: 760, minHeight: 460)
+        .frame(minWidth: 940, minHeight: 460)
     }
 
     // MARK: Header
@@ -166,6 +168,8 @@ struct LabelsView: View {
             Text(L("Label")).frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 4)
             Text(L("Account")).frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 5)
             Text(L("Projekt")).frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 5)
+            Text(L("Art")).frame(width: 150, alignment: .leading).padding(.leading, 5)
+            Text(L("Zählt")).frame(width: 44)
             Text(L("Stunden")).frame(width: 64, alignment: .trailing)
             Color.clear.frame(width: 24, height: 1)
         }
@@ -229,6 +233,12 @@ struct LabelsView: View {
                 .help("#\(l)")
                 comboField(l, .account, value: info.account, account: info.account)
                 comboField(l, .project, value: info.project, account: info.account)
+                kindMenu(l)
+                Toggle("", isOn: Binding(get: { store.counts(l) }, set: { store.setCounts($0, for: l) }))
+                    .toggleStyle(.checkbox)
+                    .labelsHidden()
+                    .frame(width: 44)
+                    .help(L("Zählt zu Stunden und BT"))
                 Text(hours > 0 ? Fmt.duration(hours) : "–")
                     .font(.system(size: 13).monospacedDigit())
                     .foregroundStyle(hours > 0 ? .primary : .secondary)
@@ -255,6 +265,7 @@ struct LabelsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
             Color.clear.frame(maxWidth: .infinity, maxHeight: 1)
+            Color.clear.frame(width: 194, height: 1)
             Text(Fmt.duration(hours)).font(.system(size: 13).monospacedDigit()).frame(width: 64, alignment: .trailing)
             Color.clear.frame(width: 24, height: 1)
         }
@@ -275,7 +286,8 @@ struct LabelsView: View {
                 placeholder: field == .account ? L("Account") : L("Projekt"),
                 font: Look.regular13,
                 textColor: field == .account ? .labelColor : .secondaryLabelColor,
-                placeholderColor: NSColor(Look.warningText),
+                // Missing booking target is a problem for work, not for absences.
+                placeholderColor: store.kind(l).isAbsence ? .tertiaryLabelColor : NSColor(Look.warningText),
                 focus: focusTarget == target ? FocusRequest(id: focusSeq) : nil,
                 onFocusChange: { focused in
                     if focused {
@@ -292,6 +304,26 @@ struct LabelsView: View {
                 .padding(.horizontal, 4)
         }
         .anchorPreference(key: AnchorKey.self, value: .bounds) { open && !items.isEmpty ? $0 : nil }
+    }
+
+    /// Kind of the label: work or one of the absences (icon and color in the overview, no reminder).
+    private func kindMenu(_ l: String) -> some View {
+        let kind = store.kind(l)
+        return Menu {
+            ForEach(LabelKind.allCases) { k in
+                Button { store.setKind(k, for: l) } label: { Label(k.title, systemImage: k.icon) }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: kind.icon).foregroundStyle(kind.isAbsence ? kind.color : .secondary)
+                Text(kind.title).foregroundStyle(kind.isAbsence ? .primary : .secondary)
+            }
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .font(.system(size: 13))
+        .frame(width: 150, alignment: .leading)
+        .padding(.leading, 5)
     }
 
     private func currentOptions() -> [Rules.Option] {
@@ -399,23 +431,30 @@ struct LabelsView: View {
     private func commitName(_ l: String) {
         defer { editingName = nil; skipCommit = false }
         guard editingName == l, !skipCommit else { return }
-        store.renameLabel(l, to: nameDraft)
+        let before = store.snapshot
+        let new = store.renameLabel(l, to: nameDraft)
+        guard new != l else { return }
+        show(Toast(message: L("#%1$@ heißt jetzt #%2$@", l, new), undo: { store.restore(before) }))
+    }
+
+    private func show(_ t: Toast) {
+        toast = t
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { if toast == t { toast = nil } }
     }
 
     private func deleteLabel(_ l: String, used: Bool) {
         guard let info = store.labelInfo[l] else { return }
         store.removeLabelInfo(l)
-        let t = Toast(label: l, info: info, used: used)
-        toast = t
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { if toast == t { toast = nil } }
+        show(Toast(message: used ? L("#%@: Zuordnung entfernt", l) : L("#%@ gelöscht", l),
+                   undo: { store.setInfo(info, for: l) }))
     }
 
     private func toastView(_ t: Toast) -> some View {
         HStack(spacing: 8) {
-            Text(t.used ? L("#%@: Zuordnung entfernt", t.label) : L("#%@ gelöscht", t.label)).lineLimit(1)
+            Text(t.message).lineLimit(1)
             Spacer()
             Button(L("Rückgängig")) {
-                store.setInfo(t.info, for: t.label)
+                t.undo()
                 toast = nil
             }
             .buttonStyle(.plain)

@@ -162,7 +162,11 @@ enum ExportScript {
             d = cal.date(byAdding: .day, value: 1, to: d)!
         }
         var labelList: [String: Any] = [:]
-        for (label, info) in labels { labelList[label] = ["account": info.account, "project": info.project] }
+        for (label, info) in labels {
+            let kind = LabelKind.of(label)
+            labelList[label] = ["account": info.account, "project": info.project, "kind": kind.rawValue,
+                                "counts": info.counts ?? !kind.isAbsence]
+        }
         return ["month": monthFormat.string(from: start), "days": days, "labels": labelList]
     }
 
@@ -233,16 +237,16 @@ enum ExportScript {
     //     date: "2026-10-01", day: 1, weekday: "Do", weekend: false,
     //     closed: true,          // endet mit Feierabend
     //     start: "08:00", end: "16:30",   // nur wenn es Einträge gibt
-    //     absences: ["krank"],   // Abwesenheiten des Tages
+    //     absences: ["sick"],    // Abwesenheiten des Tages (Art, siehe absence)
     //     entries: [{
     //       start: "08:00", end: "09:00", minutes: 60,
     //       kind: "work" | "pause" | "feierabend",
     //       label, description, account, project,
-    //       absence: "urlaub" | "krank" | "kind-krank" | null,
+    //       absence: "vacation" | "sick" | "child-sick" | "absence" | null,   // Art des Labels
     //       running,             // läuft gerade (heute)
     //     }],
     //   }],
-    //   labels: { "<label>": { account, project } },
+    //   labels: { "<label>": { account, project, kind, counts } },   // kind: "work" oder wie absence
     // }
     //
     // Das Skript entscheidet, was in die Datei kommt (z. B. ob Abwesenheiten)

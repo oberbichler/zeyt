@@ -13,10 +13,19 @@ enum Rules {
         var v = raw.lowercased()
         while v.hasPrefix("#") { v.removeFirst() }
         v = v.replacingOccurrences(of: "[\\s_]+", with: "-", options: .regularExpression)
-        v = v.replacingOccurrences(of: "[^a-z0-9äöüß-]", with: "", options: .regularExpression)
+        v = v.replacingOccurrences(of: "[^\\p{L}\\p{N}-]", with: "", options: .regularExpression)
         v = v.replacingOccurrences(of: "-{2,}", with: "-", options: .regularExpression)
         v = v.replacingOccurrences(of: "^-+", with: "", options: .regularExpression)
         return String(v.prefix(labelMax))
+    }
+
+    /// Stops are stored as "pause"/"feierabend"; typed, the word in the app's language works too
+    /// (e.g. "break"/"done"). Returns the stored word, or nil if `text` is no stop.
+    static func stop(_ text: String) -> String? {
+        let w = text.trimmingCharacters(in: .whitespaces).lowercased()
+        if w == "pause" || w == L("pause").lowercased() { return "pause" }
+        if w == "feierabend" || w == L("feierabend").lowercased() { return "feierabend" }
+        return nil
     }
 
     /// Splits pasted or typed "label comment" at the first whitespace.
@@ -121,7 +130,8 @@ enum Rules {
 
     static func meta(_ info: LabelInfo?, label: String = "") -> String {
         guard let info, !info.account.isEmpty, !info.project.isEmpty else {
-            return Absence(rawValue: label)?.title ?? L("Account & Projekt fehlen")
+            let kind = LabelKind.of(label)
+            return kind.isAbsence ? kind.title : L("Account & Projekt fehlen")
         }
         return L("%1$@ › %2$@", info.account, info.project)
     }

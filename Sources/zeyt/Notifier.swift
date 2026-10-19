@@ -84,11 +84,10 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         return Rules.mid(s, 40)
     }
 
-    /// "#alpha Sync Team" / "alpha Sync Team" → label + comment; "pause"/"feierabend" are kept as they are.
+    /// "#alpha Sync Team" / "alpha Sync Team" → label + comment; a stop word ("pause", "break" …) is a stop.
     static func parse(_ reply: String) -> String {
         let raw = reply.trimmingCharacters(in: .whitespacesAndNewlines)
-        let word = raw.lowercased()
-        if word == "pause" || word == "feierabend" { return word }
+        if let stop = Rules.stop(raw) { return stop }
         if let split = Rules.splitLabel(raw) { return Entry.compose(label: split.label, description: split.comment) }
         return Entry.compose(label: raw, description: "")
     }

@@ -12,14 +12,17 @@ zeyt sends a notification asking what you are working on.
 
 ## Features
 
-- **Quick entries**: type `#label comment`. An entry runs until the next one; `pause` and
-  `feierabend` (end of day) stop it, `#urlaub`, `#krank` and `#kind-krank` mark vacation and sick days.
+- **Quick entries**: type `#label comment`. An entry runs until the next one; the stop button (or
+  typing `break`/`done`) ends it. New users start with `#vacation`, `#sick` and `#child-sick`, named in
+  their own language.
 - **Menu bar**: shows the running label and its duration at a glance.
 - **Reminders**: a notification when no label is running, with configurable interval, hours and
   workdays. Answer it directly, continue the last task, take a break, end the day or snooze.
 - **Day view**: timeline of the day, week strip, hours per day and calendar week, and person-days
-  (1 PD = 8 h). Labels such as vacation or sick days can be left out of the hours.
-- **Labels**: assign account and project to each label, import label lines from `.zeyt` files.
+  (1 PD = 8 h). Absences such as vacation or sick days are left out of the hours, if you like.
+- **Labels**: assign account and project to each label, mark labels as vacation, sick or other
+  absence (icon in the overview, no reminders), choose which labels count toward the hours, rename
+  labels across all entries.
 - **Copy days**: copy a day and paste it into one or more other days, also as plain text via the
   clipboard.
 - **Export**: your own JavaScript turns a month into JSON, CSV, TSV or text. Templates for Chronos

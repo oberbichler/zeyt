@@ -171,7 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             w.title = L("zeyt – Labels")
             w.styleMask = [.titled, .closable, .resizable, .miniaturizable]
             w.isReleasedWhenClosed = false
-            w.setContentSize(NSSize(width: 820, height: 520))
+            w.setContentSize(NSSize(width: 980, height: 520))
             w.setFrameAutosaveName("Labels")
             w.center()
             labelsWindow = w

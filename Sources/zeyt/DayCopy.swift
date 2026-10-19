@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Days on the system clipboard as text ("08:00 #alpha Sync" per line), so they can also go to
-/// and come from other apps, e.g. a day block of a zeyt file.
+/// and come from other apps, e.g. a day in a text note.
 @MainActor
 enum DayClipboard {
     static func copy(_ entries: [Entry]) {

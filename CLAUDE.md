@@ -7,7 +7,9 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 - Oberfläche übersetzt: Quelltexte deutsch über `L("…")` (`Localization.swift`), Übersetzungen in
   `Sources/zeyt/Resources/<sprache>.lproj/Localizable.strings` (en, fr, es, it, pl, nl, pt; `de` leer, weil
   die Schlüssel deutsch sind). Neue oder geänderte Texte in allen Sprachen nachziehen, `LocalizationTests`
-  prüft Vollständigkeit und Platzhalter. Eingabesyntax (`pause`, `feierabend`, `#urlaub` …) bleibt unübersetzt.
+  prüft Vollständigkeit und Platzhalter. Gespeichert wird immer `pause`/`feierabend`; getippt geht auch das
+  Wort der App-Sprache (`Rules.stop`, Schlüssel `pause`/`feierabend`). Die Schlüssel `urlaub`, `krank`,
+  `kind-krank` sind die Label-Namen, mit denen neue Nutzer starten.
   App in einer Sprache starten: `open build/zeyt.app --args -AppleLanguages "(en)"`.
 - Code-Kommentare englisch, Antworten an den Nutzer deutsch.
 - Nur committen, wenn der Nutzer es verlangt.
@@ -67,7 +69,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `Migration.swift` | übernimmt einmalig Einstellungen von `local.tmr` (früherer Name TMR) |
 | `AppState.swift` | gemeinsamer Zustand von Popover und Einstellungen |
 | `Model.swift` | testbare Regeln: Labels, Vorschläge, Zeiten, `DayText` (Tag als Text), `Block` (Dauer, Art) |
-| `EntryStore.swift` | `Entry`, Abwesenheiten, Laden/Speichern von `log.csv` und `labels.json`, Einfügen/Rückgängig |
+| `EntryStore.swift` | `Entry`, `LabelKind` (Arbeit/Abwesenheiten), `LabelInfo` (Account, Projekt, Art, zählt), Laden/Speichern von `log.csv` und `labels.json`, Einfügen/Rückgängig |
 | `DayView.swift` | Popover: Kopf mit Wochenleiste, Tagesliste, Eingabezeile, Zahnrad-Menü, Toasts, Fokus/Navigation |
 | `DayParts.swift` | Bausteine dazu: `DayBar`, `WeekDayCell`, `StatView`, `HoverRow`, `KindDot`, Knöpfe, `RowMetrics` |
 | `Fields.swift`, `ComboBox.swift` | Eingabefelder (Zeit, Label, Kommentar) |
@@ -83,7 +85,8 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 
 Datenformat `log.csv`: Kopf `Zeit,Tätigkeit`, Zeilen `yyyy-MM-dd HH:mm,"#label Kommentar"`. Ein Eintrag
 läuft bis zum nächsten; `pause`/`feierabend` sind Stopps (der letzte Stopp des Tages zählt als
-Feierabend). `#urlaub`, `#krank`, `#kind-krank` sind Abwesenheiten.
+Feierabend). Ob ein Label Abwesenheit ist und ob es zu Stunden/BT zählt, steht pro Label in `labels.json`
+(`kind`, `counts`); ohne Angabe gelten `#urlaub`, `#krank`, `#kind-krank` als Abwesenheit (`LabelKind.legacy`).
 
 ## Release
 

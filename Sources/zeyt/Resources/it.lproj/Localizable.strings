@@ -53,7 +53,6 @@
 "Das Skript lässt sich in den Einstellungen bearbeiten." = "Puoi modificare lo script nelle impostazioni.";
 "Das Skript muss eine Funktion transform(input) definieren." = "Lo script deve definire una funzione transform(input).";
 "Deine Änderungen am Skript gehen verloren." = "Le tue modifiche allo script andranno perse.";
-"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste, z. B. Urlaub oder Krank. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Il tempo di questi label non conta nelle ore e nei GU di giorno, settimana e barra settimanale, ad es. Ferie o Malattia. Se disattivato conta tutto. Per l'esportazione decide lo script.";
 "Diese Woche" = "Questa settimana";
 "Dieser Monat" = "Questo mese";
 "Duplizieren – startet zur Eingabezeit" = "Duplica – inizia all'ora inserita";
@@ -191,3 +190,15 @@
 "zeyt – Labels" = "zeyt – Label";
 "Über zeyt" = "Informazioni su zeyt";
 "↑↓ · Enter" = "↑↓ · Invio";
+"#%1$@ heißt jetzt #%2$@" = "#%1$@ ora si chiama #%2$@";
+"Arbeit" = "Lavoro";
+"Art" = "Tipo";
+"Sonstige Abwesenheit" = "Altra assenza";
+"Zählt" = "Conta";
+"Zählt zu Stunden und BT" = "Conta nelle ore e nei GU";
+"feierabend" = "fine";
+"kind-krank" = "figlio-malato";
+"krank" = "malattia";
+"pause" = "pausa";
+"urlaub" = "ferie";
+"Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Il tempo di questi label non conta nelle ore e nei GU di giorno, settimana e barra settimanale. Le assenze all'inizio non contano; tipo e «Conta» si impostano anche nella finestra «Label». Se disattivato conta tutto. Per l'esportazione decide lo script.";

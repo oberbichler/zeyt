@@ -205,9 +205,9 @@ struct NotificationReplyTests {
 struct AbsenceLabelTests {
     @Test func absenceComesFromTheLabel() {
         let d = Date()
-        #expect(Entry(date: d, text: "#krank Krank").absence == .krank)
-        #expect(Entry(date: d, text: "#kind-krank").absence == .kindKrank)
-        #expect(Entry(date: d, text: "#urlaub").absence == .urlaub)
+        #expect(Entry(date: d, text: "#krank Krank").absence == .sick)
+        #expect(Entry(date: d, text: "#kind-krank").absence == .childSick)
+        #expect(Entry(date: d, text: "#urlaub").absence == .vacation)
         #expect(Entry(date: d, text: "urlaub").absence == nil)
         #expect(Entry(date: d, text: "#alpha Urlaubsübergabe").absence == nil)
         #expect(Entry(date: d, text: "feierabend").absence == nil)
