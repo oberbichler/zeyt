@@ -137,6 +137,7 @@
 "Pause" = "Przerwa";
 "Pause %@ gelöscht" = "Usunięto przerwę %@";
 "Pause seit %@ – wieder zurück?" = "Przerwa od %@ – już wróciłeś?";
+"Pause – als letzter Eintrag des Tages Feierabend" = "Przerwa – jako ostatni wpis dnia koniec pracy";
 "Pause – keine Erinnerung" = "Przerwa – bez przypomnienia";
 "Projekt" = "Projekt";
 "Projekte · %@" = "Projekty · %@";

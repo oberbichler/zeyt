@@ -137,6 +137,7 @@
 "Pause" = "Break";
 "Pause %@ gelöscht" = "Break %@ deleted";
 "Pause seit %@ – wieder zurück?" = "On break since %@ – back again?";
+"Pause – als letzter Eintrag des Tages Feierabend" = "Break – the day’s last entry is the end of day";
 "Pause – keine Erinnerung" = "Break – no reminder";
 "Projekt" = "Project";
 "Projekte · %@" = "Projects · %@";

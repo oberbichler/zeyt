@@ -500,11 +500,20 @@ struct TagField: View {
 
     private var plain: Bool { plainWhenEmpty && label.isEmpty }
 
+    private var maxLabelWidth: CGFloat { style == .input ? 190 : 170 }
+
     private var labelWidth: CGFloat {
         // Width of a shortened label at most; the field itself cuts it in the middle.
         let shown = labelFocused ? label : Rules.mid(label, Rules.labelShow)
         let w = Look.width(shown.isEmpty ? labelPlaceholder : shown, plain ? Look.regular13 : Look.semibold13) + 4
-        return min(max(w, 14), style == .input ? 190 : 170)
+        return min(max(w, 14), maxLabelWidth)
+    }
+
+    /// Extra room behind the label while typing. A typed character lands in the field before SwiftUI
+    /// widens it; without room for it the field editor scrolls the text left, under the "#", and keeps
+    /// that offset after the field has grown. The room overlaps the comment and takes no layout space.
+    private var typingRoom: CGFloat {
+        labelFocused ? max(0, min(Look.width("W", Look.semibold13) + 4, maxLabelWidth - labelWidth)) : 0
     }
 
     var body: some View {
@@ -524,10 +533,11 @@ struct TagField: View {
                 truncation: .byTruncatingMiddle, focus: labelFocus,
                 onFocusChange: { labelFocused = $0; onLabelFocus($0) },
                 onCommand: onLabelCommand)
-                .frame(width: labelWidth, height: 20)
+                .frame(width: labelWidth + typingRoom, height: 20)
                 // AppKit draws the field 2 pt beyond its SwiftUI frame (alignment insets): text scrolled
                 // while typing would show up there, right against the "#".
                 .clipShape(FieldClip())
+                .padding(.trailing, -typingRoom)
             if !ghost.isEmpty {
                 // Right at the end of the typed text (the field draws it 2 pt in), not at the end of
                 // the field, which has a minimum width.
