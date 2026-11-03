@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "Sans label depuis %@ · Répondre avec #label commentaire";
 "Skript durch Vorlage ersetzen?" = "Remplacer le script par le modèle ?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Script interrompu après %@ s – boucle infinie ?";
-"Starten: #%@" = "Démarrer : #%@";
 "Stunden" = "Heures";
 "Stunden und BT" = "Heures et JH";
 "Tabelle (CSV)" = "Tableau (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Ignorer les jours qui ont des entrées";
 "Testen" = "Tester";
 "Token neu erzeugen" = "Régénérer le jeton";
-"Unverplant starten" = "Démarrer sans label";
 "Urlaub" = "Congés";
 "Verwendetes Label wählen" = "Choisir un label utilisé";
 "Von" = "Du";
@@ -202,3 +200,8 @@
 "pause" = "pause";
 "urlaub" = "congés";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Le temps de ces labels n’est pas compté dans les heures et JH du jour, de la semaine et de la barre hebdomadaire. Les absences ne comptent pas au départ ; le type et « Compte » se règlent aussi dans la fenêtre « Labels ». Désactivé, tout est compté. L’export en décide lui-même dans le script.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Retour arrière sur le # crée une pause (fin de journée en dernier)";
+"Feierabend einfügen" = "Ajouter fin de journée";
+"Pause einfügen" = "Ajouter une pause";
+"Unverplant einfügen" = "Ajouter non attribué";
+"Einfügen: #%@" = "Ajouter : #%@";

@@ -529,13 +529,14 @@ struct TagField: View {
                 // while typing would show up there, right against the "#".
                 .clipShape(FieldClip())
             if !ghost.isEmpty {
-                // Right at the end of the typed text (the field draws it 2 pt in), not at the end of
-                // the field, which has a minimum width.
+                // Right at the end of the typed text, not at the end of the field, which has a minimum
+                // width. The field's 2 pt text inset is already made up by the leading edge of the ghost
+                // (measured: with the inset added, the ghost stood 2 pt apart from the typed text).
                 Text(ghost)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
                     .fixedSize()
-                    .offset(x: 2 + Look.exactWidth(label, Look.semibold13) - labelWidth)
+                    .offset(x: Look.exactWidth(label, Look.semibold13) - labelWidth)
                     .allowsHitTesting(false)
             }
             if showsComment {

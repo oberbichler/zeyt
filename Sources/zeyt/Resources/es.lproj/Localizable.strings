@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "Sin etiqueta desde %@ · Responde con #label comentario";
 "Skript durch Vorlage ersetzen?" = "¿Reemplazar el script por la plantilla?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Script detenido tras %@ s – ¿bucle infinito?";
-"Starten: #%@" = "Iniciar: #%@";
 "Stunden" = "Horas";
 "Stunden und BT" = "Horas y JP";
 "Tabelle (CSV)" = "Tabla (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Omitir días con entradas";
 "Testen" = "Probar";
 "Token neu erzeugen" = "Regenerar token";
-"Unverplant starten" = "Iniciar sin asignar";
 "Urlaub" = "Vacaciones";
 "Verwendetes Label wählen" = "Elegir etiqueta usada";
 "Von" = "Desde";
@@ -202,3 +200,8 @@
 "pause" = "pausa";
 "urlaub" = "vacaciones";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "El tiempo de estas etiquetas no cuenta en las horas y JP del día, la semana y la barra semanal. Las ausencias no cuentan al principio; el tipo y «Cuenta» también se ajustan en la ventana «Etiquetas». Desactivado, cuenta todo. La exportación lo decide en su script.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Retroceso sobre el # crea una pausa (fin de jornada al final)";
+"Feierabend einfügen" = "Añadir fin de jornada";
+"Pause einfügen" = "Añadir pausa";
+"Unverplant einfügen" = "Añadir sin asignar";
+"Einfügen: #%@" = "Añadir: #%@";

@@ -14,6 +14,8 @@ struct DayView: View {
     @State private var draftTime: Date?
     @State private var draftLabel = ""
     @State private var draftComment = ""
+    /// The "#" of the input was deleted: Enter or + adds a stop (break, or end of day as last stop).
+    @State private var draftStop = false
     /// Which part of the input capsule has focus (time, label, comment) – one ring for all.
     @State private var inputFocus: Set<String> = []
     @State private var ac: Ac?
@@ -380,10 +382,10 @@ struct DayView: View {
     private func inputBar(_ ctx: Ctx) -> some View {
         let key = Key.draft
         let items = suggestions(for: key, ctx)
-        let stopTitle = Rules.stopIsEndOfDay(ctx.entries, at: ctx.draftDate) ? L("Feierabend") : L("Pause")
+        let endOfDay = Rules.stopIsEndOfDay(ctx.entries, at: ctx.draftDate)
         return VStack(spacing: 0) {
             Divider()
-            // One capsule: time │ #label comment  ▶ ■ – one frame, one focus ring, concentric radii.
+            // One capsule: time │ #label comment  + – one frame, one focus ring, concentric radii.
             HStack(spacing: 0) {
                 TimeField(date: ctx.draftDate, bare: true, focus: request(.draftTime),
                           onCommit: { draftTime = $0 },
@@ -402,10 +404,12 @@ struct DayView: View {
                     style: .input,
                     label: Binding(get: { draftLabel }, set: { draftLabelChanged($0, ctx) }),
                     comment: $draftComment,
-                    labelPlaceholder: ctx.resume?.label ?? "label",
+                    labelPlaceholder: draftStop ? (endOfDay ? L("feierabend") : L("pause")) : ctx.resume?.label ?? "label",
                     commentPlaceholder: draftLabel.isEmpty && ctx.resume != nil ? L("Enter = fortsetzen") : L("Kommentar"),
+                    showsComment: !draftStop,
                     commentDimmed: draftLabel.isEmpty && ctx.resume == nil,
-                    ghost: ghost(for: key, items),
+                    ghost: draftStop ? "" : ghost(for: key, items),
+                    plainWhenEmpty: draftStop,
                     labelFocus: request(.draftLabel),
                     commentFocus: request(.draftComment),
                     onLabelFocus: { labelFocusChanged(key, $0); setInputFocus("label", $0) },
@@ -418,6 +422,19 @@ struct DayView: View {
                     onLabelCommand: { cmd in
                         // The input bar is the new line already: Shift+Enter is Enter there.
                         let cmd = cmd == .newLineBelow ? FieldCommand.enter : cmd
+                        if draftStop {
+                            switch cmd {
+                            case .enter: stop(ctx); return true
+                            case .escape: draftStop = false; return true
+                            default: return navigate(from: .draftLabel, cmd, ctx)
+                            }
+                        }
+                        // Backspace on the "#" of an empty label: a stop instead of a task.
+                        if cmd == .deleteAtStart, draftLabel.isEmpty, draftComment.isEmpty {
+                            draftStop = true
+                            ac = nil
+                            return true
+                        }
                         return labelCommand(key, cmd, items, onEnter: { submit(viaEnter: true, ctx) }, onEscape: {
                             guard !draftLabel.isEmpty || !draftComment.isEmpty else { return nil }
                             return { draftLabel = ""; draftComment = "" }
@@ -431,16 +448,16 @@ struct DayView: View {
                         }
                     },
                     onBackgroundTap: { focus(draftLabel.isEmpty ? .draftLabel : .draftComment) })
-                .anchorPreference(key: AnchorKey.self, value: .bounds) { ac?.key == key && !items.isEmpty ? $0 : nil }
-                CircleButton(systemImage: "play.fill", size: 10, tint: .white, fill: .accentColor) {
-                    submit(viaEnter: false, ctx)
+                .help(draftStop ? L("# tippen macht daraus eine Tätigkeit")
+                      : L("Backspace auf dem # macht eine Pause (am Tagesende Feierabend)"))
+                .anchorPreference(key: AnchorKey.self, value: .bounds) { ac?.key == key && !items.isEmpty && !draftStop ? $0 : nil }
+                CircleButton(systemImage: "plus", size: 11, tint: .white, fill: .accentColor) {
+                    if draftStop { stop(ctx) } else { submit(viaEnter: false, ctx) }
                 }
-                .help(draftLabel.isEmpty ? L("Unverplant starten") : L("Starten: #%@", draftLabel))
+                .help(draftStop ? (endOfDay ? L("Feierabend einfügen") : L("Pause einfügen"))
+                      : draftLabel.isEmpty ? L("Unverplant einfügen") : L("Einfügen: #%@", draftLabel))
                 .padding(.leading, 4)
-                CircleButton(systemImage: "stop.fill", size: 9, tint: .primary, fill: Color.primary.opacity(0.08)) { stop(ctx) }
-                    .help(stopTitle)
-                    .padding(.leading, 4)
-                    .padding(.trailing, 4)
+                .padding(.trailing, 4)
             }
             .frame(height: 34)
             // Border and focus ring as stacked fills: strokes on a capsule leave artifacts at the ends.
@@ -627,6 +644,13 @@ struct DayView: View {
     // MARK: Editing
 
     private func draftLabelChanged(_ raw: String, _ ctx: Ctx) {
+        // As in a stop row: only "#" turns it back into a task, other keys are refused.
+        if draftStop {
+            guard raw.hasPrefix("#") else { NSSound.beep(); refresh += 1; return }
+            draftStop = false
+            draftLabelChanged(String(raw.dropFirst()), ctx)
+            return
+        }
         if let split = Rules.splitLabel(raw) {
             // Space accepts the selected suggestion and jumps into the comment; pasted "label comment" is split.
             var label = split.label
@@ -699,7 +723,9 @@ struct DayView: View {
     private func stop(_ ctx: Ctx) {
         let end = Rules.stopIsEndOfDay(ctx.entries, at: ctx.draftDate)
         store.add(date: ctx.draftDate, text: end ? "feierabend" : "pause", dedupe: false)
+        draftStop = false
         draftTime = nil
+        focus(.draftTime, caret: .start)
     }
 
     private func delete(_ b: Block) {

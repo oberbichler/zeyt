@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "Senza label dalle %@ · Rispondi con #label commento";
 "Skript durch Vorlage ersetzen?" = "Sostituire lo script con il modello?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Script interrotto dopo %@ s – ciclo infinito?";
-"Starten: #%@" = "Avvia: #%@";
 "Stunden" = "Ore";
 "Stunden und BT" = "Ore e GU";
 "Tabelle (CSV)" = "Tabella (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Salta i giorni con voci";
 "Testen" = "Prova";
 "Token neu erzeugen" = "Rigenera token";
-"Unverplant starten" = "Avvia senza label";
 "Urlaub" = "Ferie";
 "Verwendetes Label wählen" = "Scegli un label usato";
 "Von" = "Da";
@@ -202,3 +200,8 @@
 "pause" = "pausa";
 "urlaub" = "ferie";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Il tempo di questi label non conta nelle ore e nei GU di giorno, settimana e barra settimanale. Le assenze all'inizio non contano; tipo e «Conta» si impostano anche nella finestra «Label». Se disattivato conta tutto. Per l'esportazione decide lo script.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Backspace sul # crea una pausa (fine giornata se è l'ultima)";
+"Feierabend einfügen" = "Aggiungi fine giornata";
+"Pause einfügen" = "Aggiungi pausa";
+"Unverplant einfügen" = "Aggiungi senza label";
+"Einfügen: #%@" = "Aggiungi: #%@";

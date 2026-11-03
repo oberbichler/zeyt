@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "No label since %@ · Reply with #label comment";
 "Skript durch Vorlage ersetzen?" = "Replace script with template?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Script stopped after %@ s – infinite loop?";
-"Starten: #%@" = "Start: #%@";
 "Stunden" = "Hours";
 "Stunden und BT" = "Hours and PD";
 "Tabelle (CSV)" = "Spreadsheet (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Skip days with entries";
 "Testen" = "Test";
 "Token neu erzeugen" = "Regenerate token";
-"Unverplant starten" = "Start unassigned";
 "Urlaub" = "Vacation";
 "Verwendetes Label wählen" = "Choose a used label";
 "Von" = "From";
@@ -202,3 +200,8 @@
 "pause" = "break";
 "urlaub" = "vacation";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Time with these labels doesn't count toward the hours and PD of day, week and week bar. Absences don't count at first; kind and “Counts” can also be set in the “Labels” window. When off, everything counts. The export script decides for itself.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Backspace on the # makes a break (end of day at the end)";
+"Feierabend einfügen" = "Add end of day";
+"Pause einfügen" = "Add break";
+"Unverplant einfügen" = "Add unassigned";
+"Einfügen: #%@" = "Add: #%@";

@@ -12,9 +12,9 @@ zeyt sends a notification asking what you are working on.
 
 ## Features
 
-- **Quick entries**: type `#label comment`. An entry runs until the next one; the stop button (or
-  typing `break`/`done`) ends it. New users start with `#vacation`, `#sick` and `#child-sick`, named in
-  their own language.
+- **Quick entries**: type `#label comment` and press Return or +. An entry runs until the next one;
+  delete the `#` to add a break instead (the last one of the day is the end of day). New users start
+  with `#vacation`, `#sick` and `#child-sick`, named in their own language.
 - **Menu bar**: shows the running label and its duration at a glance.
 - **Reminders**: a notification when no label is running, with configurable interval, hours and
   workdays. Answer it directly, continue the last task, take a break, end the day or snooze.

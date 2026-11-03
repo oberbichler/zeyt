@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "Sinds %@ zonder label · Antwoord met #label opmerking";
 "Skript durch Vorlage ersetzen?" = "Script vervangen door sjabloon?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Script na %@ s afgebroken – oneindige lus?";
-"Starten: #%@" = "Start: #%@";
 "Stunden" = "Uren";
 "Stunden und BT" = "Uren en MD";
 "Tabelle (CSV)" = "Tabel (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Dagen met items overslaan";
 "Testen" = "Test";
 "Token neu erzeugen" = "Nieuw token aanmaken";
-"Unverplant starten" = "Start zonder label";
 "Urlaub" = "Vakantie";
 "Verwendetes Label wählen" = "Kies een gebruikt label";
 "Von" = "Van";
@@ -202,3 +200,8 @@
 "pause" = "pauze";
 "urlaub" = "vakantie";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "De tijd van deze labels telt niet mee voor de uren en MD van dag, week en weekbalk. Afwezigheden tellen eerst niet mee; soort en ‘Telt’ zijn ook in het venster ‘Labels’ in te stellen. Uitgeschakeld telt alles mee. De export bepaalt dit zelf in het script.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Backspace op de # maakt een pauze (aan het eind: einde werkdag)";
+"Feierabend einfügen" = "Einde werkdag toevoegen";
+"Pause einfügen" = "Pauze toevoegen";
+"Unverplant einfügen" = "Zonder label toevoegen";
+"Einfügen: #%@" = "Toevoegen: #%@";

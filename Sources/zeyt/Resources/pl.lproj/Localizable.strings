@@ -148,7 +148,6 @@
 "Seit %@ ohne Label · Antworten mit #label Kommentar" = "Od %@ bez etykiety · Odpowiedz: #label komentarz";
 "Skript durch Vorlage ersetzen?" = "Zastąpić skrypt szablonem?";
 "Skript nach %@ s abgebrochen – Endlosschleife?" = "Przerwano skrypt po %@ s – nieskończona pętla?";
-"Starten: #%@" = "Rozpocznij: #%@";
 "Stunden" = "Godziny";
 "Stunden und BT" = "Godziny i OD";
 "Tabelle (CSV)" = "Tabela (CSV)";
@@ -157,7 +156,6 @@
 "Tage mit Einträgen auslassen" = "Pomiń dni z wpisami";
 "Testen" = "Testuj";
 "Token neu erzeugen" = "Wygeneruj nowy token";
-"Unverplant starten" = "Rozpocznij bez etykiety";
 "Urlaub" = "Urlop";
 "Verwendetes Label wählen" = "Wybierz używaną etykietę";
 "Von" = "Od";
@@ -202,3 +200,8 @@
 "pause" = "przerwa";
 "urlaub" = "urlop";
 "Die Zeit dieser Labels zählt nicht zu den Stunden und BT von Tag, Woche und Wochenleiste. Abwesenheiten zählen anfangs nicht; Art und „Zählt“ lassen sich auch im Fenster „Labels“ einstellen. Ausgeschaltet zählt alles. Der Export entscheidet im Skript selbst." = "Czas tych etykiet nie wlicza się do godzin i OD dnia, tygodnia i paska tygodnia. Nieobecności początkowo się nie liczą; rodzaj i „Liczy się” można ustawić także w oknie „Etykiety”. Po wyłączeniu liczy się wszystko. Eksport decyduje o tym sam w skrypcie.";
+"Backspace auf dem # macht eine Pause (am Tagesende Feierabend)" = "Backspace na # tworzy przerwę (na końcu dnia koniec pracy)";
+"Feierabend einfügen" = "Dodaj koniec pracy";
+"Pause einfügen" = "Dodaj przerwę";
+"Unverplant einfügen" = "Dodaj bez etykiety";
+"Einfügen: #%@" = "Dodaj: #%@";
