@@ -205,3 +205,16 @@
 "Pause einfügen" = "Dodaj przerwę";
 "Unverplant einfügen" = "Dodaj bez etykiety";
 "Einfügen: #%@" = "Dodaj: #%@";
+
+/* Calendar */
+"Kalender (⌘K)" = "Kalendarz (⌘K)";
+"Kalender …" = "Kalendarz …";
+"zeyt – Kalender" = "zeyt – Kalendarz";
+"Vormonat (←)" = "Poprzedni miesiąc (←)";
+"Folgemonat (→)" = "Następny miesiąc (→)";
+"Zum aktuellen Monat springen" = "Przejdź do bieżącego miesiąca";
+"KW" = "Tydz.";
+"1 Arbeitstag" = "1 dzień pracy";
+"%@ Arbeitstage" = "Dni pracy: %@";
+"Ø %@ h pro Arbeitstag" = "Śr. %@ h na dzień pracy";
+"Tag anklicken, um ihn zu öffnen" = "Kliknij dzień, aby go otworzyć";

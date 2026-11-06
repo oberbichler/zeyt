@@ -205,3 +205,16 @@
 "Pause einfügen" = "Add break";
 "Unverplant einfügen" = "Add unassigned";
 "Einfügen: #%@" = "Add: #%@";
+
+/* Calendar */
+"Kalender (⌘K)" = "Calendar (⌘K)";
+"Kalender …" = "Calendar …";
+"zeyt – Kalender" = "zeyt – Calendar";
+"Vormonat (←)" = "Previous month (←)";
+"Folgemonat (→)" = "Next month (→)";
+"Zum aktuellen Monat springen" = "Go to the current month";
+"KW" = "Week";
+"1 Arbeitstag" = "1 workday";
+"%@ Arbeitstage" = "%@ workdays";
+"Ø %@ h pro Arbeitstag" = "Avg. %@ h per workday";
+"Tag anklicken, um ihn zu öffnen" = "Click a day to open it";

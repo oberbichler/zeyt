@@ -217,6 +217,14 @@ final class EntryStore: ObservableObject {
         entries.filter { Calendar.current.isDate($0.date, inSameDayAs: day) }
     }
 
+    /// Entries from `from` to `to` (whole days), grouped by start of day.
+    func entriesByDay(from: Date, to: Date) -> [Date: [Entry]] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: from)
+        let end = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: to))!
+        return Dictionary(grouping: entries.filter { $0.date >= start && $0.date < end }) { cal.startOfDay(for: $0.date) }
+    }
+
     /// First absence label of the day (for the icon in the overview).
     func absence(on day: Date) -> Absence? {
         entries(on: day).lazy.compactMap(\.absence).first

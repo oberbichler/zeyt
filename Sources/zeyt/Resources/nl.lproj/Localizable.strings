@@ -205,3 +205,16 @@
 "Pause einfügen" = "Pauze toevoegen";
 "Unverplant einfügen" = "Zonder label toevoegen";
 "Einfügen: #%@" = "Toevoegen: #%@";
+
+/* Calendar */
+"Kalender (⌘K)" = "Kalender (⌘K)";
+"Kalender …" = "Kalender …";
+"zeyt – Kalender" = "zeyt – Kalender";
+"Vormonat (←)" = "Vorige maand (←)";
+"Folgemonat (→)" = "Volgende maand (→)";
+"Zum aktuellen Monat springen" = "Ga naar de huidige maand";
+"KW" = "Wk";
+"1 Arbeitstag" = "1 werkdag";
+"%@ Arbeitstage" = "%@ werkdagen";
+"Ø %@ h pro Arbeitstag" = "Gem. %@ u per werkdag";
+"Tag anklicken, um ihn zu öffnen" = "Klik op een dag om hem te openen";

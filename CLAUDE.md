@@ -46,7 +46,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
   danach mit `./build.sh install` die echte App wieder starten.
 - **UI-Tests per Skript** (Layout, Fokus, Ruckeln): `./build.sh uitest` baut `build/zeyt-uitest.app` mit
   `Sources/zeyt/UITestScript.swift` (nur mit `-DZEYT_UITEST` kompiliert, Befehle im Dateikopf: `key`, `type`,
-  `click`, `snap`, `burst`, `frames`, `dump`, `reopen`, `appearance`, `settings`, `labels`, `notifications` …).
+  `click`, `snap`, `burst`, `frames`, `dump`, `reopen`, `appearance`, `settings`, `labels`, `calendar`, `notifications` …).
   Die Testinstanz hat die Bundle-ID `xyz.oberbichler.zeyt.uitest`, also eigene Einstellungen, und trägt sich
   nicht als Anmeldeobjekt ein. Start:
   `pkill -x zeyt; open -g -W --env ZEYT_DATA_DIR=<Kopie> --env ZEYT_UISCRIPT=<skript> --env ZEYT_UIOUT=<ordner> build/zeyt-uitest.app`,
@@ -75,6 +75,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `Fields.swift`, `ComboBox.swift` | Eingabefelder (Zeit, Label, Kommentar) |
 | `DayCopy.swift` | Tag kopieren/einfügen, Zwischenablage |
 | `LabelsView.swift` | Fenster „Labels“ (Account, Projekt) |
+| `CalendarView.swift` | Fenster „Kalender“: Monat in KW-Zeilen, Stunden pro Tag/KW/Monat (Raster: `MonthGrid`, Tag: `DaySummary` in `Model.swift`) |
 | `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Export, Agent) |
 | `ExportScript.swift`, `Export.swift` | Export per JavaScript (JavaScriptCore), Vorlagen Chronos und CSV |
 | `Notifier.swift` | Erinnerung als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |

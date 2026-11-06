@@ -27,11 +27,30 @@ while len(workdays) < len(days):
     day -= timedelta(days=1)
     if day.weekday() < 5:
         workdays.insert(0, day)
+# Older weeks for the calendar: rotating workdays, a few days off, back about two months.
+templates = [
+    [("08:30", "#webshop Daily"), ("08:45", "#webshop Feature work"), ("12:15", "pause"),
+     ("13:00", "#api Review"), ("17:00", "feierabend")],
+    [("08:00", "#api Backend"), ("12:00", "pause"), ("12:30", "#internal Team meeting"),
+     ("13:30", "#api Backend"), ("16:15", "feierabend")],
+    [("09:00", "#webshop Daily"), ("09:15", "#webshop Bugfixes"), ("12:30", "pause"),
+     ("13:15", "#webshop Bugfixes"), ("18:00", "feierabend")],
+    [("08:45", "#internal Email"), ("09:15", "#api Deployment"), ("12:00", "pause"),
+     ("12:45", "#webshop Rework"), ("15:30", "feierabend")],
+]
+older, day, i = [], workdays[0], 0
+while (workdays[0] - day).days < 62:
+    day -= timedelta(days=1)
+    if day.weekday() < 5:
+        i += 1
+        entries = [("09:00", "#vacation")] if i in (9, 10, 11) else [("09:00", "#sick")] if i == 23 \
+            else templates[i % len(templates)]
+        older.insert(0, (day, entries))
 today = [(245, "#internal Email"), (230, "#webshop Daily"), (215, "#api Invoice endpoint"),
          (110, "pause"), (80, "#api Invoice tests"), (40, "#webshop Checkout page")]
 with open(f"{out}/log.csv", "w") as f:
     f.write("Zeit,Tätigkeit\n")
-    for day, entries in zip(workdays, days):
+    for day, entries in older + list(zip(workdays, days)):
         for time, text in entries:
             f.write(f'{day.strftime("%Y-%m-%d")} {time},"{text}"\n')
     for minutes, text in today:
@@ -39,7 +58,7 @@ with open(f"{out}/log.csv", "w") as f:
 json.dump({"webshop": {"account": "Customer A", "project": "Webshop 2.0"},
            "api": {"account": "Customer B", "project": "Invoicing API"},
            "internal": {"account": "Internal", "project": "General"},
-           "vacation": {"kind": "vacation"}}, open(f"{out}/labels.json", "w"))
+           "vacation": {"kind": "vacation"}, "sick": {"kind": "sick"}}, open(f"{out}/labels.json", "w"))
 # Status item as zeyt shows it: label and duration of the running entry
 running = datetime.now() - (now - timedelta(minutes=today[-1][0]))
 minutes = int(running.total_seconds()) // 60
@@ -60,8 +79,11 @@ snap entry
 settings general
 settings export
 labels
+calendar CALENDAR_MONTH
 quit
 EOF
+# The calendar shows a full month: the last one early in the month.
+sed -i '' "s/CALENDAR_MONTH/$(( $(date +%-d) < 20 ? -1 : 0 ))/" "$TMP/script.txt"
 
 ./build.sh uitest
 # Settings of the test instance (own domain): show the list of labels left out of the hours.
@@ -78,6 +100,7 @@ shot entry entry light popover "$TITLE"
 shot settings-general reminders light window "zeyt – Settings"
 shot settings-export export light window "zeyt – Settings"
 shot labels labels light window "zeyt – Labels"
+shot calendar calendar light window "zeyt – Calendar"
 rm -rf "$TMP"
 [[ -d ~/Applications/zeyt.app ]] && open ~/Applications/zeyt.app
 ls docs/*.png
