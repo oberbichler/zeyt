@@ -130,8 +130,7 @@ struct DayView: View {
     private func makeCtx(now: Date) -> Ctx {
         let entries = store.entries(on: day)
         let stats = store.labelStats
-        var colors: [String: Color] = [:]
-        for (i, s) in stats.enumerated() { colors[s.label] = Look.palette[i % Rules.paletteSize] }
+        let colors = Look.labelColors(stats)
         let draftDate = draftTime ?? Rules.roundedNow(now, on: day)
         let starts = entries.map(\.date)
         return Ctx(
@@ -144,9 +143,7 @@ struct DayView: View {
     private var uncounted: Set<String> { state.uncountedEnabled ? Set(store.uncounted) : [] }
 
     private func color(_ label: String, _ ctx: Ctx) -> Color {
-        let kind = LabelKind.of(label)
-        if kind.isAbsence { return kind.color }
-        return label.isEmpty ? Color.primary.opacity(0.18) : ctx.colors[label] ?? Look.palette[5]
+        Look.labelColor(label, ctx.colors)
     }
 
     // MARK: Header

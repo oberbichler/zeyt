@@ -123,12 +123,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                                           self?.showLabelsWindow(activate: false)
                                           return self?.labelsWindow?.contentView
                                       },
-                                      calendar: { [weak self] months in
+                                      calendar: { [weak self] arg in
                                           guard let self else { return nil }
-                                          // Int.min: only the window, the month stays.
-                                          if months != Int.min {
-                                              state.calendarMonth = Calendar.current.date(
-                                                  byAdding: .month, value: months, to: MonthGrid.start(of: Date()))!
+                                          // "-1": months back; nil: only the window, the month stays.
+                                          if let arg {
+                                              state.calendarDate = Calendar.current.date(byAdding: .month, value: Int(arg) ?? 0,
+                                                                                          to: Calendar.current.startOfDay(for: Date()))!
                                           }
                                           self.showCalendarWindow(activate: false)
                                           return self.calendarWindow?.contentView
@@ -211,14 +211,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             w.title = L("zeyt – Kalender")
             w.styleMask = [.titled, .closable, .resizable, .miniaturizable]
             w.isReleasedWhenClosed = false
-            w.setContentSize(NSSize(width: 720, height: 560))
-            w.setFrameAutosaveName("Calendar")
+            w.setContentSize(NSSize(width: 1040, height: 640))
+            w.setFrameAutosaveName("CalendarWindow")
             w.center()
             calendarWindow = w
         }
         store.load()
         #if !ZEYT_UITEST
-        if calendarWindow?.isVisible != true { state.calendarMonth = MonthGrid.start(of: Date()) }
+        if calendarWindow?.isVisible != true { state.calendarDate = Calendar.current.startOfDay(for: Date()) }
         #endif
         guard activate else { calendarWindow?.orderFrontRegardless(); return }
         NSApp.activate(ignoringOtherApps: true)

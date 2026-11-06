@@ -80,6 +80,11 @@ settings general
 settings export
 labels
 calendar CALENDAR_MONTH
+target calendar
+click 880 272
+move 300 20
+wait 400
+snap calendar-highlight
 quit
 EOF
 # The calendar shows a full month: the last one early in the month.
@@ -100,7 +105,7 @@ shot entry entry light popover "$TITLE"
 shot settings-general reminders light window "zeyt – Settings"
 shot settings-export export light window "zeyt – Settings"
 shot labels labels light window "zeyt – Labels"
-shot calendar calendar light window "zeyt – Calendar"
+shot calendar-highlight calendar light window "zeyt – Calendar"
 rm -rf "$TMP"
 [[ -d ~/Applications/zeyt.app ]] && open ~/Applications/zeyt.app
 ls docs/*.png
