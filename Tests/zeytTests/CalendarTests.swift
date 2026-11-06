@@ -74,3 +74,74 @@ import Testing
         #expect(!a.isWorkday)
     }
 }
+
+@Suite struct PeriodStatsTests {
+    let d = CalendarTests.date
+
+    func byDay(_ entries: [Entry]) -> [Date: [Entry]] {
+        Dictionary(grouping: entries) { Calendar.current.startOfDay(for: $0.date) }
+    }
+
+    @Test func weekFigures() {
+        let entries = [
+            Entry(date: d("2026-10-12 08:00"), text: "#api"), Entry(date: d("2026-10-12 12:00"), text: "pause"),
+            Entry(date: d("2026-10-12 12:30"), text: "#web"), Entry(date: d("2026-10-12 16:30"), text: "feierabend"),
+            Entry(date: d("2026-10-13 09:00"), text: "#api"), Entry(date: d("2026-10-13 15:00"), text: "feierabend"),
+            Entry(date: d("2026-10-14 09:00"), text: "#urlaub"), Entry(date: d("2026-10-14 17:00"), text: "feierabend"),
+        ]
+        let s = PeriodStats.make(days: MonthGrid.week(of: d("2026-10-14")), entries: byDay(entries),
+                                 now: d("2026-11-01 12:00"), uncounted: ["urlaub"])
+        let worked: TimeInterval = 14 * 3600
+        #expect(s.worked == worked)
+        #expect(s.workdays == 2)
+        #expect(s.perWorkday == worked / 2)
+        #expect(s.paused == TimeInterval(30 * 60))
+        let start: TimeInterval = 8.5 * 3600, end: TimeInterval = 15.75 * 3600
+        #expect(s.start == start)      // 8:00 and 9:00
+        #expect(s.end == end)          // 16:30 and 15:00
+        let labels: [PeriodStats.LabelTime] = [.init(label: "api", seconds: 36000), .init(label: "web", seconds: 14400)]
+        #expect(s.labels == labels)
+        let sum = s.labels.map(\.seconds).reduce(0, +)
+        #expect(sum == s.worked)
+        #expect(s.absences == [.vacation: 1])
+    }
+
+    @Test func countedAbsenceIsALabelButNoWorkday() {
+        let entries = [Entry(date: d("2026-10-14 09:00"), text: "#urlaub"), Entry(date: d("2026-10-14 17:00"), text: "feierabend")]
+        let s = PeriodStats.make(days: [d("2026-10-14")], entries: byDay(entries), now: d("2026-11-01 12:00"))
+        #expect(s.worked == 8 * 3600)
+        #expect(s.workdays == 0)
+        #expect(s.labels.map(\.label) == ["urlaub"])
+        #expect(s.start == nil)
+    }
+
+    @Test func runningDayEndsNow() {
+        let entries = [Entry(date: d("2026-11-06 08:00"), text: "#api")]
+        let now = d("2026-11-06 11:30")
+        // The last task of the day `now` runs until now.
+        let s = PeriodStats.make(days: [d("2026-11-06")], entries: byDay(entries), now: now)
+        let end: TimeInterval = 11.5 * 3600
+        #expect(s.end == end)
+        #expect(s.workdays == 1)
+    }
+
+    @Test func timePerLabelOnADay() {
+        let entries = [Entry(date: d("2026-10-12 08:00"), text: "#api"), Entry(date: d("2026-10-12 10:00"), text: "#web"),
+                       Entry(date: d("2026-10-12 11:00"), text: "pause"), Entry(date: d("2026-10-12 11:30"), text: "#api x"),
+                       Entry(date: d("2026-10-12 12:00"), text: "feierabend")]
+        let s = DaySummary.make(d("2026-10-12"), entries: entries, now: d("2026-11-01 12:00"))
+        let api: TimeInterval = 2.5 * 3600, both: TimeInterval = 3.5 * 3600
+        #expect(s.time(on: ["api"]) == api)
+        #expect(s.time(on: ["api", "web"]) == both)
+        #expect(s.time(on: ["other"]) == 0)
+        #expect(s.labels["pause"] == nil)
+    }
+
+    @Test func weekAndMonthDays() {
+        let week = MonthGrid.week(of: d("2026-11-01"))
+        #expect(CalendarTests.day(week[0]) == "2026-10-26")
+        #expect(week.count == 7)
+        #expect(MonthGrid.days(of: d("2026-02-10")).count == 28)
+        #expect(MonthGrid.days(of: d("2026-10-10")).count == 31)
+    }
+}

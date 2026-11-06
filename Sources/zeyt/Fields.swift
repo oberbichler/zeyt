@@ -175,6 +175,19 @@ enum Look {
         appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(white: 0.165, alpha: 1) : NSColor(white: 0.957, alpha: 1)
     }
     static let panel = Color(nsColor: panelNS)
+
+    /// Color per label: by position in the label stats (as in the popover), absences by kind.
+    static func labelColors(_ stats: [Rules.LabelStat]) -> [String: Color] {
+        var colors: [String: Color] = [:]
+        for (i, s) in stats.enumerated() { colors[s.label] = palette[i % Rules.paletteSize] }
+        return colors
+    }
+
+    static func labelColor(_ label: String, _ colors: [String: Color]) -> Color {
+        let kind = LabelKind.of(label)
+        if kind.isAbsence { return kind.color }
+        return label.isEmpty ? Color.primary.opacity(0.18) : colors[label] ?? palette[5]
+    }
     static let warning = Color(nsColor: .systemOrange)
     static let warningText = Color(red: 0.79, green: 0.20, blue: 0.0)
 }

@@ -75,7 +75,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `Fields.swift`, `ComboBox.swift` | Eingabefelder (Zeit, Label, Kommentar) |
 | `DayCopy.swift` | Tag kopieren/einfügen, Zwischenablage |
 | `LabelsView.swift` | Fenster „Labels“ (Account, Projekt) |
-| `CalendarView.swift` | Fenster „Kalender“: Monat in KW-Zeilen, Stunden pro Tag/KW/Monat (Raster: `MonthGrid`, Tag: `DaySummary` in `Model.swift`) |
+| `CalendarView.swift` | Fenster „Kalender“: Monat in KW-Zeilen, rechts Zahlen zum Monat; Label/Account darin hebt dessen Tage hervor (`MonthGrid`, `DaySummary`, `PeriodStats` in `Model.swift`) |
 | `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Export, Agent) |
 | `ExportScript.swift`, `Export.swift` | Export per JavaScript (JavaScriptCore), Vorlagen Chronos und CSV |
 | `Notifier.swift` | Erinnerung als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |

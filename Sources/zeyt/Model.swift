@@ -271,17 +271,85 @@ struct DaySummary: Identifiable {
     let absence: Absence?
     /// Only absence entries that day: the icon replaces the hours.
     let onlyAbsence: Bool
+    /// Time per label that day ("" = unlabeled), counted or not.
+    var labels: [String: TimeInterval] = [:]
     var id: Date { date }
 
     static func make(_ date: Date, entries: [Entry], now: Date, uncounted: Set<String> = []) -> DaySummary {
         let tasks = entries.filter { !$0.isStop }
         let absence = tasks.lazy.compactMap(\.absence).first
-        return DaySummary(date: date, worked: Block.worked(Block.compute(entries, now: now), uncounted: uncounted),
-                          absence: absence, onlyAbsence: absence != nil && tasks.allSatisfy { $0.absence != nil })
+        let blocks = Block.compute(entries, now: now)
+        var labels: [String: TimeInterval] = [:]
+        for b in blocks where b.kind == .task && b.duration > 0 { labels[b.entry.label, default: 0] += b.duration }
+        return DaySummary(date: date, worked: Block.worked(blocks, uncounted: uncounted),
+                          absence: absence, onlyAbsence: absence != nil && tasks.allSatisfy { $0.absence != nil },
+                          labels: labels)
+    }
+
+    /// Time on any of these labels that day.
+    func time(on labels: Set<String>) -> TimeInterval {
+        labels.reduce(0) { $0 + (self.labels[$1] ?? 0) }
     }
 
     /// A day with work on it (not only absence).
     var isWorkday: Bool { worked > 0 && !onlyAbsence }
+}
+
+/// Figures for a run of days (week or month in the calendar).
+struct PeriodStats: Equatable {
+    /// Hours and BT: tasks whose label counts.
+    var worked: TimeInterval = 0
+    /// Days with work (not only absence).
+    var workdays = 0
+    /// Breaks on workdays.
+    var paused: TimeInterval = 0
+    /// Average start (first task) and end of the workdays, as seconds after midnight.
+    var start: TimeInterval?
+    var end: TimeInterval?
+    /// Worked time per label ("" = unlabeled), most first; adds up to `worked`.
+    var labels: [LabelTime] = []
+    /// Days with an absence, per kind.
+    var absences: [Absence: Int] = [:]
+
+    struct LabelTime: Equatable {
+        let label: String
+        let seconds: TimeInterval
+    }
+
+    var perWorkday: TimeInterval { workdays > 0 ? worked / Double(workdays) : 0 }
+
+    static func make(days: [Date], entries byDay: [Date: [Entry]], now: Date, uncounted: Set<String> = []) -> PeriodStats {
+        let cal = Calendar.current
+        var s = PeriodStats()
+        var perLabel: [String: TimeInterval] = [:]
+        var starts: [TimeInterval] = [], ends: [TimeInterval] = []
+        for day in days {
+            let entries = byDay[cal.startOfDay(for: day)] ?? []
+            let blocks = Block.compute(entries, now: now)
+            let summary = DaySummary.make(day, entries: entries, now: now, uncounted: uncounted)
+            s.worked += summary.worked
+            if let a = summary.absence { s.absences[a, default: 0] += 1 }
+            for b in blocks where b.kind == .task && !uncounted.contains(Rules.tag(b.entry.label)) && b.duration > 0 {
+                perLabel[b.entry.label, default: 0] += b.duration
+            }
+            guard summary.isWorkday else { continue }
+            s.workdays += 1
+            s.paused += Block.paused(blocks)
+            let midnight = cal.startOfDay(for: day)
+            if let first = blocks.first(where: { $0.kind == .task && $0.entry.absence == nil }) {
+                starts.append(first.entry.date.timeIntervalSince(midnight))
+            }
+            if let last = blocks.last {
+                let end: Date? = last.kind == .end ? last.entry.date : last.running ? now : last.end
+                if let end { ends.append(end.timeIntervalSince(midnight)) }
+            }
+        }
+        s.start = starts.isEmpty ? nil : starts.reduce(0, +) / Double(starts.count)
+        s.end = ends.isEmpty ? nil : ends.reduce(0, +) / Double(ends.count)
+        s.labels = perLabel.map { LabelTime(label: $0.key, seconds: $0.value) }
+            .sorted { $0.seconds != $1.seconds ? $0.seconds > $1.seconds : $0.label < $1.label }
+        return s
+    }
 }
 
 /// Month calendar laid out in ISO weeks (Monday to Sunday).
@@ -293,6 +361,18 @@ enum MonthGrid {
 
     static func contains(_ month: Date, _ day: Date) -> Bool {
         Calendar.current.isDate(day, equalTo: month, toGranularity: .month)
+    }
+
+    /// Monday to Sunday of the ISO week containing `date`.
+    static func week(of date: Date) -> [Date] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: date)!.start)
+        return (0..<7).map { cal.date(byAdding: .day, value: $0, to: start)! }
+    }
+
+    /// All days of the month containing `date`.
+    static func days(of date: Date) -> [Date] {
+        weeks(of: date).joined().filter { contains(date, $0) }
     }
 
     /// The weeks touching the month of `date`, seven days each, starting on Monday.
@@ -465,6 +545,24 @@ enum Fmt {
             .replacingOccurrences(of: ".", with: AppLanguage.code == "de" ? "," : AppLanguage.locale.decimalSeparator ?? ".")
         return L("%@ BT", number)
     }
+
+    /// Seconds after midnight as time of day, "08:24".
+    static func clock(_ seconds: TimeInterval) -> String {
+        let m = Int((seconds / 60).rounded())
+        return String(format: "%02d:%02d", m / 60 % 24, m % 60)
+    }
+
+    /// "12.–18. Okt. 2026"
+    static func dayRange(_ from: Date, _ to: Date) -> String {
+        dayRangeFormatter.string(from: from, to: to)
+    }
+
+    private static let dayRangeFormatter: DateIntervalFormatter = {
+        let f = DateIntervalFormatter()
+        f.locale = AppLanguage.locale
+        f.dateTemplate = "dMMMyyyy"
+        return f
+    }()
 
     static func duration(_ seconds: TimeInterval) -> String {
         let m = Int(seconds / 60)

@@ -36,7 +36,7 @@ final class UITestScript {
     private let close: () -> Void
     private let settings: (String) -> NSView?
     private let labels: () -> NSView?
-    private let calendar: (Int) -> NSView?
+    private let calendar: (String?) -> NSView?
     private let notifications: (Bool) -> Void
     private let out: URL
     private var lines: [String]
@@ -46,7 +46,7 @@ final class UITestScript {
 
     static func startIfRequested(view: @escaping () -> NSView?, open: @escaping () -> Void, close: @escaping () -> Void,
                                  settings: @escaping (String) -> NSView?, labels: @escaping () -> NSView?,
-                                 calendar: @escaping (Int) -> NSView?, notifications: @escaping (Bool) -> Void) {
+                                 calendar: @escaping (String?) -> NSView?, notifications: @escaping (Bool) -> Void) {
         let env = ProcessInfo.processInfo.environment
         guard let path = env["ZEYT_UISCRIPT"], let outPath = env["ZEYT_UIOUT"],
               let text = try? String(contentsOfFile: path, encoding: .utf8) else { return }
@@ -69,7 +69,7 @@ final class UITestScript {
 
     private init(view: NSView, open: @escaping () -> Void, close: @escaping () -> Void,
                  settings: @escaping (String) -> NSView?, labels: @escaping () -> NSView?,
-                 calendar: @escaping (Int) -> NSView?, notifications: @escaping (Bool) -> Void,
+                 calendar: @escaping (String?) -> NSView?, notifications: @escaping (Bool) -> Void,
                  out: URL, lines: String) {
         self.popoverView = view
         self.view = view
@@ -99,7 +99,7 @@ final class UITestScript {
         case "settings":
             captureWindow(settings(arg), "settings-" + arg)
         case "labels": captureWindow(labels(), "labels")
-        case "calendar": captureWindow(calendar(Int(arg) ?? 0), "calendar")
+        case "calendar": captureWindow(calendar(arg), "calendar")
         case "reopen":
             close()
             DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(400)) { self.open(); self.after(400) }
@@ -123,7 +123,7 @@ final class UITestScript {
             mouse(cmd, x: CGFloat(Double(args[0]) ?? 0), y: CGFloat(Double(args[1]) ?? 0))
             settle(line)
         case "target":
-            if arg == "calendar", let v = calendar(Int.min) { view = v } else { view = popoverView }
+            if arg == "calendar", let v = calendar(nil) { view = v } else { view = popoverView }
             after(200)
         case "close": close(); after(400)
         case "quit": finish()
