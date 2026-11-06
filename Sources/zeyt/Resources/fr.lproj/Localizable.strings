@@ -205,3 +205,16 @@
 "Pause einfügen" = "Ajouter une pause";
 "Unverplant einfügen" = "Ajouter non attribué";
 "Einfügen: #%@" = "Ajouter : #%@";
+
+/* Calendar */
+"Kalender (⌘K)" = "Calendrier (⌘K)";
+"Kalender …" = "Calendrier …";
+"zeyt – Kalender" = "zeyt – Calendrier";
+"Vormonat (←)" = "Mois précédent (←)";
+"Folgemonat (→)" = "Mois suivant (→)";
+"Zum aktuellen Monat springen" = "Aller au mois en cours";
+"KW" = "Sem.";
+"1 Arbeitstag" = "1 jour travaillé";
+"%@ Arbeitstage" = "%@ jours travaillés";
+"Ø %@ h pro Arbeitstag" = "Moy. %@ h par jour travaillé";
+"Tag anklicken, um ihn zu öffnen" = "Cliquez sur un jour pour l’ouvrir";

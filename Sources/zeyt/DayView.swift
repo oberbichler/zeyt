@@ -106,9 +106,19 @@ struct DayView: View {
         .onAppear {
             focus(.draftLabel, quiet: true)
         }
+        .onChange(of: state.requestedDay) {
+            guard let d = state.requestedDay else { return }
+            selectDay(d)
+            state.requestedDay = nil
+        }
         .onChange(of: state.openCount) {
             // A day picked by hand stays picked; "today" follows the date (also past midnight).
-            if followsToday { day = Calendar.current.startOfDay(for: Date()) }
+            if let d = state.requestedDay {
+                day = Calendar.current.startOfDay(for: d)
+                state.requestedDay = nil
+            } else if followsToday {
+                day = Calendar.current.startOfDay(for: Date())
+            }
             draftTime = nil
             ac = nil
             pendingPaste = nil
@@ -166,6 +176,7 @@ struct DayView: View {
                         .help(L("Zu heute springen"))
                     }
                     Spacer()
+                    IconButton(systemImage: "calendar", help: L("Kalender (⌘K)")) { state.openCalendar() }
                     GearButton(unassigned: store.unassignedCount) { showMenu() }
                 }
             }
@@ -197,22 +208,10 @@ struct DayView: View {
         .padding(.horizontal, 8)
     }
 
-    struct WeekDay: Identifiable {
-        let date: Date
-        let worked: TimeInterval
-        let absence: Absence?
-        /// Only absence entries that day: the icon replaces the hours.
-        let onlyAbsence: Bool
-        var id: Date { date }
-    }
+    typealias WeekDay = DaySummary
 
     private func dayInfo(_ d: Date, _ now: Date) -> WeekDay {
-        let entries = store.entries(on: d)
-        let tasks = entries.filter { !$0.isStop }
-        let absence = tasks.lazy.compactMap(\.absence).first
-        return WeekDay(date: d, worked: Block.worked(Block.compute(entries, now: now), uncounted: uncounted),
-                       absence: absence,
-                       onlyAbsence: absence != nil && tasks.allSatisfy { $0.absence != nil })
+        DaySummary.make(d, entries: store.entries(on: d), now: now, uncounted: uncounted)
     }
 
     /// Seven days with the selected one in the middle.
@@ -929,6 +928,7 @@ struct DayView: View {
             labels.attributedTitle = title
         }
         menu.addItem(labels)
+        menu.addItem(MenuItem.make(L("Kalender …"), key: "k") { state.openCalendar() })
         menu.addItem(.separator())
         let copy = MenuItem.make(L("Tag kopieren"), key: "c") { copyDay(day) }
         copy.keyEquivalentModifierMask = [.command, .option]
@@ -960,6 +960,7 @@ struct DayView: View {
     private var shortcuts: some View {
         Group {
             Button("") { state.openLabels() }.keyboardShortcut("l")
+            Button("") { state.openCalendar() }.keyboardShortcut("k")
             Button("") { state.openSettings() }.keyboardShortcut(",")
             Button("") { state.export(day) }.keyboardShortcut("e")
             Button("") { NSApp.terminate(nil) }.keyboardShortcut("q")

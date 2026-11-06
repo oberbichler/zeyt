@@ -264,6 +264,53 @@ enum DayText {
     }
 }
 
+/// Hours and absence of one day, for the week strip and the calendar.
+struct DaySummary: Identifiable {
+    let date: Date
+    let worked: TimeInterval
+    let absence: Absence?
+    /// Only absence entries that day: the icon replaces the hours.
+    let onlyAbsence: Bool
+    var id: Date { date }
+
+    static func make(_ date: Date, entries: [Entry], now: Date, uncounted: Set<String> = []) -> DaySummary {
+        let tasks = entries.filter { !$0.isStop }
+        let absence = tasks.lazy.compactMap(\.absence).first
+        return DaySummary(date: date, worked: Block.worked(Block.compute(entries, now: now), uncounted: uncounted),
+                          absence: absence, onlyAbsence: absence != nil && tasks.allSatisfy { $0.absence != nil })
+    }
+
+    /// A day with work on it (not only absence).
+    var isWorkday: Bool { worked > 0 && !onlyAbsence }
+}
+
+/// Month calendar laid out in ISO weeks (Monday to Sunday).
+enum MonthGrid {
+    /// First day of the month containing `date`.
+    static func start(of date: Date) -> Date {
+        Calendar.current.dateInterval(of: .month, for: date)!.start
+    }
+
+    static func contains(_ month: Date, _ day: Date) -> Bool {
+        Calendar.current.isDate(day, equalTo: month, toGranularity: .month)
+    }
+
+    /// The weeks touching the month of `date`, seven days each, starting on Monday.
+    static func weeks(of date: Date) -> [[Date]] {
+        let cal = Calendar.current
+        let first = start(of: date)
+        let last = cal.date(byAdding: DateComponents(month: 1, day: -1), to: first)!
+        var day = Calendar(identifier: .iso8601).dateInterval(of: .weekOfYear, for: first)!.start
+        day = cal.startOfDay(for: day)
+        var weeks: [[Date]] = []
+        while day <= last {
+            weeks.append((0..<7).map { cal.date(byAdding: .day, value: $0, to: day)! })
+            day = cal.date(byAdding: .day, value: 7, to: day)!
+        }
+        return weeks
+    }
+}
+
 /// Reminder when no label is assigned to the current time.
 struct Reminder: Equatable {
     var enabled = true

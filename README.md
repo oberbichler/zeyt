@@ -20,6 +20,8 @@ zeyt sends a notification asking what you are working on.
   workdays. Answer it directly, continue the last task, take a break, end the day or snooze.
 - **Day view**: timeline of the day, week strip, hours per day and calendar week, and person-days
   (1 PD = 8 h). Absences such as vacation or sick days are left out of the hours, if you like.
+- **Calendar**: a month at a glance with hours per day, per calendar week and for the month,
+  workdays, average and absences. Click a day to open it.
 - **Labels**: assign account and project to each label, mark labels as vacation, sick or other
   absence (icon in the overview, no reminders), choose which labels count toward the hours, rename
   labels across all entries.
@@ -45,6 +47,8 @@ zeyt sends a notification asking what you are working on.
       <sub>Export through your own JavaScript, with templates.</sub></td>
   </tr>
 </table>
+
+<img src="docs/calendar.png" alt="Calendar with hours per day, calendar week and month" width="640">
 
 Available in English, German, French, Spanish, Italian, Dutch, Polish and Portuguese (following the
 system language). Requires macOS 14 (Sonoma) or later, Apple Silicon or Intel.

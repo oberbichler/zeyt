@@ -29,6 +29,13 @@ final class AppState: ObservableObject {
     }
     var promptNow: () -> Void = {}
     var openLabels: () -> Void = {}
+    var openCalendar: () -> Void = {}
+    /// Opens the popover on that day (calendar).
+    var showDay: (Date) -> Void = { _ in }
+    /// Day the popover should show when it opens next or now; taken (set to nil) by the popover.
+    @Published var requestedDay: Date?
+    /// Month shown in the calendar window (first day).
+    @Published var calendarMonth = MonthGrid.start(of: Date())
     var openSettings: () -> Void = {}
     var export: (Date) -> Void = { _ in }
     /// Switches the agent API on and returns the connection prompt.

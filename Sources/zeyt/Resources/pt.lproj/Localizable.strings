@@ -205,3 +205,16 @@
 "Pause einfügen" = "Adicionar pausa";
 "Unverplant einfügen" = "Adicionar sem label";
 "Einfügen: #%@" = "Adicionar: #%@";
+
+/* Calendar */
+"Kalender (⌘K)" = "Calendário (⌘K)";
+"Kalender …" = "Calendário …";
+"zeyt – Kalender" = "zeyt – Calendário";
+"Vormonat (←)" = "Mês anterior (←)";
+"Folgemonat (→)" = "Mês seguinte (→)";
+"Zum aktuellen Monat springen" = "Ir para o mês atual";
+"KW" = "Sem.";
+"1 Arbeitstag" = "1 dia de trabalho";
+"%@ Arbeitstage" = "%@ dias de trabalho";
+"Ø %@ h pro Arbeitstag" = "Média %@ h por dia de trabalho";
+"Tag anklicken, um ihn zu öffnen" = "Clique num dia para o abrir";

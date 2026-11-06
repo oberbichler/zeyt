@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var settingsWindow: NSWindow?
     private let notifier = Notifier()
     private var labelsWindow: NSWindow?
+    private var calendarWindow: NSWindow?
 
     /// Opening zeyt again (Finder, Spotlight) shows the popover. Only one instance runs:
     /// LSMultipleInstancesProhibited in Info.plist, also against `open -n` and other copies.
@@ -54,6 +55,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         state.openLabels = { [weak self] in
             self?.popover.performClose(nil)
             self?.showLabelsWindow()
+        }
+        state.openCalendar = { [weak self] in
+            self?.popover.performClose(nil)
+            self?.showCalendarWindow()
+        }
+        state.showDay = { [weak self] day in
+            self?.state.requestedDay = day
+            #if ZEYT_UITEST
+            self?.showPopoverForTest()
+            #else
+            self?.showPopover()
+            #endif
         }
         state.openSettings = { [weak self] in
             self?.popover.performClose(nil)
@@ -109,6 +122,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                                       labels: { [weak self] in
                                           self?.showLabelsWindow(activate: false)
                                           return self?.labelsWindow?.contentView
+                                      },
+                                      calendar: { [weak self] months in
+                                          guard let self else { return nil }
+                                          // Int.min: only the window, the month stays.
+                                          if months != Int.min {
+                                              state.calendarMonth = Calendar.current.date(
+                                                  byAdding: .month, value: months, to: MonthGrid.start(of: Date()))!
+                                          }
+                                          self.showCalendarWindow(activate: false)
+                                          return self.calendarWindow?.contentView
                                       },
                                       notifications: { [weak self] in
                                           self?.notificationsOverride = $0
@@ -180,6 +203,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard activate else { labelsWindow?.orderFrontRegardless(); return }
         NSApp.activate(ignoringOtherApps: true)
         labelsWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    private func showCalendarWindow(activate: Bool = true) {
+        if calendarWindow == nil {
+            let w = NSWindow(contentViewController: NSHostingController(rootView: CalendarView(store: store, state: state)))
+            w.title = L("zeyt – Kalender")
+            w.styleMask = [.titled, .closable, .resizable, .miniaturizable]
+            w.isReleasedWhenClosed = false
+            w.setContentSize(NSSize(width: 720, height: 560))
+            w.setFrameAutosaveName("Calendar")
+            w.center()
+            calendarWindow = w
+        }
+        store.load()
+        #if !ZEYT_UITEST
+        if calendarWindow?.isVisible != true { state.calendarMonth = MonthGrid.start(of: Date()) }
+        #endif
+        guard activate else { calendarWindow?.orderFrontRegardless(); return }
+        NSApp.activate(ignoringOtherApps: true)
+        calendarWindow?.makeKeyAndOrderFront(nil)
     }
 
     #if ZEYT_UITEST

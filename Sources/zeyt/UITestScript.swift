@@ -9,6 +9,9 @@ import AppKit
 ///     reopen                  close the popover and show it again
 ///     settings general|export|agent   open that settings tab (not activated) and capture it
 ///     labels                  open the labels window (not activated) and capture it
+///     calendar [-1]           open the calendar window (not activated) on this month (or months back) and capture it
+///     target calendar|popover key, type, click, move, snap and dump go to that window from now on
+///     close                   close the popover
 ///     burst 8                 after every following action, capture 8 frames ~16 ms apart (0 = off)
 ///     key up|down|left|right|enter|tab|esc|backspace|<character> [shift] [option] [cmd]
 ///     type text …             one real key event per character (space included)
@@ -27,11 +30,13 @@ import AppKit
 /// `NSApp.currentEvent` is not set this way (Shift+Enter is checked through it).
 @MainActor
 final class UITestScript {
-    private let view: NSView
+    private let popoverView: NSView
+    private var view: NSView
     private let open: () -> Void
     private let close: () -> Void
     private let settings: (String) -> NSView?
     private let labels: () -> NSView?
+    private let calendar: (Int) -> NSView?
     private let notifications: (Bool) -> Void
     private let out: URL
     private var lines: [String]
@@ -41,7 +46,7 @@ final class UITestScript {
 
     static func startIfRequested(view: @escaping () -> NSView?, open: @escaping () -> Void, close: @escaping () -> Void,
                                  settings: @escaping (String) -> NSView?, labels: @escaping () -> NSView?,
-                                 notifications: @escaping (Bool) -> Void) {
+                                 calendar: @escaping (Int) -> NSView?, notifications: @escaping (Bool) -> Void) {
         let env = ProcessInfo.processInfo.environment
         guard let path = env["ZEYT_UISCRIPT"], let outPath = env["ZEYT_UIOUT"],
               let text = try? String(contentsOfFile: path, encoding: .utf8) else { return }
@@ -52,7 +57,7 @@ final class UITestScript {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 guard let v = view() else { exit(2) }
                 let run = UITestScript(view: v, open: open, close: close, settings: settings,
-                                       labels: labels, notifications: notifications, out: URL(fileURLWithPath: outPath), lines: text)
+                                       labels: labels, calendar: calendar, notifications: notifications, out: URL(fileURLWithPath: outPath), lines: text)
                 current = run
                 run.next()
             }
@@ -64,13 +69,15 @@ final class UITestScript {
 
     private init(view: NSView, open: @escaping () -> Void, close: @escaping () -> Void,
                  settings: @escaping (String) -> NSView?, labels: @escaping () -> NSView?,
-                 notifications: @escaping (Bool) -> Void,
+                 calendar: @escaping (Int) -> NSView?, notifications: @escaping (Bool) -> Void,
                  out: URL, lines: String) {
+        self.popoverView = view
         self.view = view
         self.open = open
         self.close = close
         self.settings = settings
         self.labels = labels
+        self.calendar = calendar
         self.notifications = notifications
         self.out = out
         self.lines = lines.split(separator: "\n").map { String($0) }
@@ -92,6 +99,7 @@ final class UITestScript {
         case "settings":
             captureWindow(settings(arg), "settings-" + arg)
         case "labels": captureWindow(labels(), "labels")
+        case "calendar": captureWindow(calendar(Int(arg) ?? 0), "calendar")
         case "reopen":
             close()
             DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(400)) { self.open(); self.after(400) }
@@ -114,6 +122,10 @@ final class UITestScript {
         case "click", "move":
             mouse(cmd, x: CGFloat(Double(args[0]) ?? 0), y: CGFloat(Double(args[1]) ?? 0))
             settle(line)
+        case "target":
+            if arg == "calendar", let v = calendar(Int.min) { view = v } else { view = popoverView }
+            after(200)
+        case "close": close(); after(400)
         case "quit": finish()
         default: log.append("?? unknown: \(line)"); next()
         }
@@ -172,7 +184,7 @@ final class UITestScript {
                                            windowNumber: window?.windowNumber ?? 0, context: nil, characters: chars,
                                            charactersIgnoringModifiers: chars, isARepeat: false, keyCode: code) else { continue }
             // Shortcuts (⌘…) go through the Edit menu and the window's key equivalents, like NSApp does.
-            if mods.contains(.command), kind == .keyDown,
+            if mods.contains(.command) || view !== popoverView, kind == .keyDown,
                NSApp.mainMenu?.performKeyEquivalent(with: e) == true || window?.performKeyEquivalent(with: e) == true { continue }
             window?.sendEvent(e)
         }
@@ -196,6 +208,12 @@ final class UITestScript {
         // activate it. The mouse-up is queued first for the view's tracking loop.
         guard let down = event(.leftMouseDown), let up = event(.leftMouseUp),
               let hit = content.hitTest(content.convert(p, from: nil)) else { return }
+        // SwiftUI buttons in a window (not the popover's text fields) take the click through the window.
+        if view !== popoverView {
+            window.sendEvent(down)
+            window.sendEvent(up)
+            return
+        }
         NSApp.postEvent(up, atStart: false)
         hit.mouseDown(with: down)
     }
