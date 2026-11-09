@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zeyt – time tracking in the macOS menu bar</title>
+<meta name="description" content="zeyt is a small time tracker for the macOS menu bar: quick entries, reminders, presence detection, calendar, export and a local agent API.">
+<meta property="og:title" content="zeyt">
+<meta property="og:description" content="Time tracking in the macOS menu bar.">
+<meta property="og:image" content="https://oberbichler.github.io/zeyt/screenshot-light.png">
+<link rel="icon" href="icon.png">
+<style>
+  :root {
+    --bg: #fbfbfd; --surface: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #e5e5ea;
+    --accent: #0a7aff; --code: #f2f2f7;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #000; --surface: #1c1c1e; --text: #f5f5f7; --muted: #a1a1a6; --line: #2c2c2e;
+            --accent: #2f8cff; --code: #2c2c2e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5;
+         font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; font-size: 15px; }
+  nav .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); }
+  nav .brand img { width: 24px; height: 24px; }
+  nav .links { display: flex; gap: 20px; }
+
+  .hero > * { min-width: 0; }
+  .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; padding: 48px 0 72px; }
+  .hero .icon { width: 96px; height: 96px; }
+  h1 { font-size: 56px; line-height: 1.05; letter-spacing: -0.02em; margin: 16px 0 12px; }
+  .lead { font-size: 22px; color: var(--muted); margin: 0 0 28px; max-width: 30ch; }
+  .install { display: flex; align-items: center; gap: 8px; background: var(--code); border-radius: 12px;
+             padding: 10px 10px 10px 16px; max-width: 460px; }
+  .install code { flex: 1; min-width: 0; font: 15px ui-monospace, "SF Mono", Menlo, monospace; overflow-x: auto; white-space: nowrap; }
+  .install button { border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: inherit;
+                    font-size: 14px; font-weight: 600; padding: 6px 12px; cursor: pointer; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 12px; }
+  .hero picture img { width: 100%; max-width: 480px; display: block; margin: 0 auto; border-radius: 14px; }
+
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 36px; letter-spacing: -0.015em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 36px; font-size: 19px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .card h3 { font-size: 17px; margin: 0 0 6px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 24px; }
+  figure { margin: 0; }
+  figure img { width: 100%; display: block; border-radius: 12px; }
+  figcaption { color: var(--muted); font-size: 15px; margin-top: 8px; text-align: center; }
+  .wide { grid-column: 1 / -1; }
+
+  pre { background: var(--code); border-radius: 12px; padding: 16px; overflow-x: auto;
+        font: 14px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; padding-top: 24px; }
+    h1 { font-size: 44px; }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .shots { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding: 0 16px; }
+    .grid { grid-template-columns: 1fr; }
+    nav .links a.opt { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="icon.png" alt="">zeyt</a>
+    <div class="links">
+      <a class="opt" href="#features">Features</a>
+      <a class="opt" href="#install">Install</a>
+      <a href="https://github.com/oberbichler/zeyt">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <img class="icon" src="icon.png" alt="zeyt icon">
+      <h1>zeyt</h1>
+      <p class="lead">Time tracking in the macOS menu bar. Type what you do, zeyt keeps the day.</p>
+      <div class="install">
+        <code id="cmd">brew install --cask oberbichler/tap/zeyt</code>
+        <button type="button" id="copy">Copy</button>
+      </div>
+      <p class="note">Free and open source · macOS 14 or later · Apple Silicon and Intel</p>
+    </div>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="screenshot-dark.png">
+      <img src="screenshot-light.png" alt="zeyt: menu bar with the running entry and the day view open">
+    </picture>
+  </header>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Small, fast, local.</h2>
+    <p class="sub">Everything you need to know where the day went – and nothing else.</p>
+    <div class="grid">
+      <div class="card"><h3>Quick entries</h3>
+        <p>Type <code>#label comment</code> and press Return. An entry runs until the next one; delete the # for a break.</p></div>
+      <div class="card"><h3>Reminders</h3>
+        <p>A notification when nothing runs – answer it directly, continue, take a break or end the day.</p></div>
+      <div class="card"><h3>Presence detection</h3>
+        <p>Suggests your start, breaks you were away for and a forgotten end of day. Only times are kept.</p></div>
+      <div class="card"><h3>Calendar</h3>
+        <p>A month in calendar weeks with hours per day, plus the month's figures per label and account.</p></div>
+      <div class="card"><h3>Labels</h3>
+        <p>Account and project per label, vacation and sick days, and which labels count toward the hours.</p></div>
+      <div class="card"><h3>Export</h3>
+        <p>Your own JavaScript turns a month into JSON, CSV or text. Templates included.</p></div>
+      <div class="card"><h3>Agent API</h3>
+        <p>A local REST API lets agents like Claude Code read and edit your entries.</p></div>
+      <div class="card"><h3>Copy days</h3>
+        <p>Copy a day and paste it into one or many others, also as plain text.</p></div>
+      <div class="card"><h3>Your data stays yours</h3>
+        <p>A plain CSV file on your Mac. No account, no cloud, no tracking.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>A closer look</h2>
+    <p class="sub">In English, German, French, Spanish, Italian, Dutch, Polish and Portuguese.</p>
+    <div class="shots">
+      <figure><img src="entry.png" alt="Typing an entry with label suggestions" loading="lazy">
+        <figcaption>Type # and pick a label; account and project come along.</figcaption></figure>
+      <figure><img src="proposal.png" alt="A break proposal in the popover" loading="lazy">
+        <figcaption>Away over lunch while a task ran: record it as a break.</figcaption></figure>
+      <figure class="wide"><img src="calendar.png" alt="Calendar with hours per day and calendar week" loading="lazy">
+        <figcaption>The calendar: point at a label to see the days you worked on it.</figcaption></figure>
+      <figure><img src="presence.png" alt="Presence settings" loading="lazy">
+        <figcaption>Presence: when you count as away, which suggestions you get.</figcaption></figure>
+      <figure><img src="reminders.png" alt="Reminder settings" loading="lazy">
+        <figcaption>Reminders: interval, hours and workdays.</figcaption></figure>
+      <figure><img src="labels.png" alt="Labels window" loading="lazy">
+        <figcaption>Labels with account, project and hours per week or month.</figcaption></figure>
+      <figure><img src="export.png" alt="Export script settings" loading="lazy">
+        <figcaption>Export through your own JavaScript.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Install</h2>
+    <p class="sub">With Homebrew, updates come with <code>brew upgrade</code>.</p>
+    <pre>brew install --cask oberbichler/tap/zeyt</pre>
+    <p>zeyt is signed ad hoc and not notarized; the cask removes the quarantine attribute. If you download the ZIP from
+      <a href="https://github.com/oberbichler/zeyt/releases">Releases</a> instead, run:</p>
+    <pre>xattr -dr com.apple.quarantine /Applications/zeyt.app</pre>
+    <p>Your data lives in <code>~/Library/Application Support/zeyt</code>: <code>log.csv</code> with one line per entry,
+      <code>labels.json</code> and <code>activity.csv</code>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    zeyt · <a href="https://github.com/oberbichler/zeyt">Source on GitHub</a> ·
+    <a href="https://github.com/oberbichler/zeyt/releases">Releases</a> · ISC License
+  </div>
+</footer>
+
+<script>
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    try {
+      await navigator.clipboard.writeText(document.getElementById("cmd").textContent);
+      e.target.textContent = "Copied";
+      setTimeout(() => { e.target.textContent = "Copy"; }, 1500);
+    } catch { /* clipboard not available: the command stays selectable */ }
+  });
+</script>
+</body>
+</html>
