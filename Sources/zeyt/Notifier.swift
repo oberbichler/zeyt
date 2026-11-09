@@ -6,12 +6,17 @@ import UserNotifications
 @MainActor
 final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     private static let id = "prompt"
+    private static let proposalID = "proposal"
+    /// All categories: setting them replaces the previous ones.
+    private var categories: [String: UNNotificationCategory] = [:]
     private let center = UNUserNotificationCenter.current()
 
     /// Text to record at the prompt time (may be "pause"/"feierabend").
     var onAnswer: (Date, String) -> Void = { _, _ in }
     var onSnooze: () -> Void = {}
     var onOpen: () -> Void = {}
+    /// Answer to a proposal: its id, the action ("apply", "reply", "dismiss", "undo", "open") and a typed reply.
+    var onProposal: (String, String, String?) -> Void = { _, _, _ in }
     private(set) var authorized = false
 
     /// Asks once; `done` gets whether zeyt may post notifications.
@@ -50,8 +55,7 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         if pauseSince == nil { actions.append(UNNotificationAction(identifier: "pause", title: L("Pause"))) }
         actions.append(UNNotificationAction(identifier: "end", title: L("Feierabend")))
         actions.append(UNNotificationAction(identifier: "snooze", title: L("In 10 Min. erinnern")))
-        center.setNotificationCategories([UNNotificationCategory(
-            identifier: Self.id, actions: actions, intentIdentifiers: [])])
+        register(UNNotificationCategory(identifier: Self.id, actions: actions, intentIdentifiers: []))
 
         let content = UNMutableNotificationContent()
         if let pauseSince {
@@ -79,6 +83,63 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         center.add(UNNotificationRequest(identifier: Self.id, content: content, trigger: nil))
     }
 
+    private func register(_ category: UNNotificationCategory) {
+        categories[category.identifier] = category
+        center.setNotificationCategories(Set(categories.values))
+    }
+
+    /// A proposal from the presence detection, with apply and dismiss.
+    func postProposal(_ p: Proposal) {
+        let content = UNMutableNotificationContent()
+        var actions: [UNNotificationAction] = []
+        let t: (Date) -> String = { Fmt.time.string(from: $0) }
+        switch p {
+        case .start(let at, let label):
+            content.title = L("Seit %@ am Mac", t(at))
+            content.body = L("Arbeit ab %@ eintragen? Antworten mit #label Kommentar", t(at))
+            if let label { actions.append(UNNotificationAction(identifier: "apply", title: L("#%1$@ ab %2$@", label, t(at)))) }
+            actions.append(UNTextInputNotificationAction(identifier: "reply", title: L("Andere Tätigkeit …"), options: [],
+                                                         textInputButtonTitle: L("Eintragen"), textInputPlaceholder: L("#label Kommentar")))
+            actions.append(UNNotificationAction(identifier: "dismiss", title: L("Ignorieren")))
+        case .pause(let from, let to, let resume):
+            content.title = L("Weg von %1$@ bis %2$@", t(from), t(to))
+            content.body = L("Als Pause eintragen? Danach weiter mit %@.", Self.describe(resume))
+            actions.append(UNNotificationAction(identifier: "apply", title: L("Pause eintragen")))
+            actions.append(UNNotificationAction(identifier: "dismiss", title: L("War Arbeit")))
+        case .endOfDay(let at):
+            content.title = L("Feierabend um %@?", t(at))
+            content.body = L("%1$@ war noch offen; zuletzt am Mac um %2$@.", Fmt.longDay.string(from: at), t(at))
+            actions.append(UNNotificationAction(identifier: "apply", title: L("Feierabend eintragen")))
+            actions.append(UNNotificationAction(identifier: "dismiss", title: L("Ignorieren")))
+        }
+        let category = "proposal-" + p.id.prefix { $0 != "-" }
+        register(UNNotificationCategory(identifier: category, actions: actions, intentIdentifiers: []))
+        content.categoryIdentifier = category
+        content.interruptionLevel = .active
+        content.userInfo = ["proposal": p.id]
+        center.removeDeliveredNotifications(withIdentifiers: [Self.id, Self.proposalID])
+        center.add(UNNotificationRequest(identifier: Self.proposalID, content: content, trigger: nil))
+    }
+
+    /// A break recorded automatically, with undo.
+    func postApplied(_ p: Proposal) {
+        guard case .pause(let from, let to, _) = p else { return }
+        register(UNNotificationCategory(identifier: "proposal-applied",
+                                        actions: [UNNotificationAction(identifier: "undo", title: L("Rückgängig"))],
+                                        intentIdentifiers: []))
+        let content = UNMutableNotificationContent()
+        content.title = L("Pause %1$@–%2$@ eingetragen", Fmt.time.string(from: from), Fmt.time.string(from: to))
+        content.body = L("Erkannt, weil du nicht am Mac warst.")
+        content.categoryIdentifier = "proposal-applied"
+        content.interruptionLevel = .passive
+        content.userInfo = ["proposal": p.id]
+        center.add(UNNotificationRequest(identifier: Self.proposalID, content: content, trigger: nil))
+    }
+
+    func removeProposal() {
+        center.removeDeliveredNotifications(withIdentifiers: [Self.proposalID])
+    }
+
     private static func describe(_ e: Entry) -> String {
         let s = e.label.isEmpty ? e.title : "#\(e.label)" + (e.title.isEmpty ? "" : " \(e.title)")
         return Rules.mid(s, 40)
@@ -104,7 +165,12 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         let reply = (response as? UNTextInputNotificationResponse)?.userText
         let date = (info["date"] as? Double).map(Date.init(timeIntervalSince1970:)) ?? Date()
         let continueText = info["continue"] as? String ?? ""
+        let proposal = info["proposal"] as? String
         await MainActor.run {
+            if let proposal {
+                onProposal(proposal, action == UNNotificationDefaultActionIdentifier ? "open" : action, reply)
+                return
+            }
             switch action {
             case "reply":
                 if let reply, !reply.trimmingCharacters(in: .whitespaces).isEmpty { onAnswer(date, Self.parse(reply)) }

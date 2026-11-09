@@ -59,6 +59,11 @@ json.dump({"webshop": {"account": "Customer A", "project": "Webshop 2.0"},
            "api": {"account": "Customer B", "project": "Invoicing API"},
            "internal": {"account": "Internal", "project": "General"},
            "vacation": {"kind": "vacation"}, "sick": {"kind": "sick"}}, open(f"{out}/labels.json", "w"))
+# Presence today, matching the entries (the break left out), so no proposal shows.
+f = "%Y-%m-%d %H:%M:%S"
+first, lunch, back = (now - timedelta(minutes=m) for m in (today[0][0] + 3, today[3][0] - 2, today[4][0] - 1))
+open(f"{out}/activity.csv", "w").write(
+    f"Von,Bis\n{first.strftime(f)},{lunch.strftime(f)}\n{back.strftime(f)},{(now + timedelta(minutes=30)).strftime(f)}\n")
 # Status item as zeyt shows it: label and duration of the running entry
 running = datetime.now() - (now - timedelta(minutes=today[-1][0]))
 minutes = int(running.total_seconds()) // 60

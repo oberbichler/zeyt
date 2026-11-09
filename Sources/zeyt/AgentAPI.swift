@@ -9,6 +9,8 @@ final class AgentAPI: ObservableObject {
     @Published private(set) var token: String
 
     private let store: EntryStore
+    /// Presence spans of a day (`PresenceTracker`).
+    var presence: (Date) -> [DateInterval] = { _ in [] }
     private let server = HTTPServer(port: AgentAPI.port)
     private let defaults = UserDefaults.standard
 
@@ -91,6 +93,12 @@ final class AgentAPI: ObservableObject {
         case ("POST", ["api", "entries"]): return createEntry(req)
         case ("GET", ["api", "summary"]): return summary(req)
         case ("GET", ["api", "absences"]): return listAbsences(req)
+        case ("GET", ["api", "activity"]):
+            guard let day = req.query["date"].map(Self.parseDay) ?? Calendar.current.startOfDay(for: Date()) else {
+                return .error("date must be YYYY-MM-DD", status: 400)
+            }
+            return .json(presence(day).map { ["from": Fmt.time.string(from: $0.start), "to": Fmt.time.string(from: $0.end),
+                                              "minutes": Int($0.duration / 60)] })
         case ("GET", ["api", "labels"]):
             return .json(store.labels.map(labelJSON))
         case ("GET", ["api", "report"]): return report(req)
@@ -371,6 +379,7 @@ final class AgentAPI: ObservableObject {
         GET    /api/summary?date=YYYY-MM-DD   -> {date, dayMinutes, dayBT, absence, week, weekMinutes, weekBT, weekAbsences}
                  Minuten/BT enthalten alle Labels, die zählen (pro Label einstellbar; Abwesenheiten zählen anfangs nicht).
         GET    /api/absences?from=YYYY-MM-DD&to=YYYY-MM-DD   -> [{date, kind}]  Tage mit Abwesenheit, kind: vacation | sick | child-sick | absence
+        GET    /api/activity?date=YYYY-MM-DD   -> [{from, to, minutes}]  wann der Nutzer am Mac war (Eingaben, Mikrofon), falls erkannt
         POST   /api/days/copy  {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD" | ["YYYY-MM-DD", …], "until"?, "weekends"?, "mode"?}
                  Kopiert alle Einträge eines Tages mit gleichen Zeiten. "to" + "until" = Zeitraum (ohne Wochenenden,
                  außer "weekends": true). Haben Zieltage schon Einträge, ist "mode" Pflicht: "replace", "append" oder
