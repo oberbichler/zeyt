@@ -49,6 +49,8 @@ import Testing
         for (key, value) in table where Self.keys.contains(key) {
             #expect(!value.isEmpty, "\(language): leer: \(key)")
             #expect(Self.placeholders(key) == Self.placeholders(value), "\(language): Platzhalter in \(key) → \(value)")
+            // Apple writes "Settings…" without a space; only German puts one before the ellipsis.
+            #expect(!value.hasSuffix(" …"), "\(language): Leerzeichen vor … in \(value)")
         }
     }
 }
