@@ -4,6 +4,7 @@ import SwiftUI
 struct DayView: View {
     @ObservedObject var store: EntryStore
     @ObservedObject var state: AppState
+    @ObservedObject var tracker: PresenceTracker
 
     @State private var day = Calendar.current.startOfDay(for: Date()) {
         didSet { followsToday = Calendar.current.isDateInToday(day) }
@@ -104,6 +105,13 @@ struct DayView: View {
             .background(shortcuts)
         }
         .onAppear {
+            focus(.draftLabel, quiet: true)
+        }
+        .onChange(of: state.requestedDraftTime) {
+            guard let t = state.requestedDraftTime else { return }
+            state.requestedDraftTime = nil
+            selectDay(t)
+            draftTime = t
             focus(.draftLabel, quiet: true)
         }
         .onChange(of: state.requestedDay) {
@@ -232,7 +240,7 @@ struct DayView: View {
     // MARK: Day bar
 
     private func dayBar(_ ctx: Ctx) -> some View {
-        DayBar(blocks: ctx.blocks) { color($0, ctx) }
+        DayBar(blocks: ctx.blocks, presence: state.presenceEnabled ? tracker.spans(on: day) : []) { color($0, ctx) }
     }
 
     // MARK: List
@@ -244,6 +252,12 @@ struct DayView: View {
                 if !state.notificationsAllowed, state.reminder.enabled {
                     NotificationsBanner()
                         .padding(.vertical, 4)
+                }
+                if let p = state.proposal, p.isEndOfDay || isToday {
+                    ProposalBanner(proposal: p, apply: { state.applyProposal(p) }, other: {
+                        if case .start(let at, _) = p { state.requestedDraftTime = at }
+                    }, dismiss: { state.dismissProposal(p) })
+                    .padding(.vertical, 4)
                 }
                 if ctx.blocks.isEmpty {
                     VStack(spacing: 10) {

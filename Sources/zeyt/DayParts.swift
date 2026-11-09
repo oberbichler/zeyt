@@ -237,6 +237,8 @@ struct RowAction: View {
 /// The day as one bar of its tasks and breaks, with start and end below.
 struct DayBar: View {
     let blocks: [Block]
+    /// When the user was at the Mac that day: a thin line under the bar.
+    var presence: [DateInterval] = []
     /// Colour of a label.
     let color: (String) -> Color
 
@@ -266,6 +268,9 @@ struct DayBar: View {
             .frame(height: 6)
             .background(Color.primary.opacity(0.08))
             .clipShape(Capsule())
+            if !presence.isEmpty, total > 0 {
+                PresenceLine(spans: presence, from: first.entry.date, to: first.entry.date.addingTimeInterval(total))
+            }
             HStack {
                 Text(Fmt.time.string(from: first.entry.date))
                 Spacer()
@@ -277,6 +282,30 @@ struct DayBar: View {
         .padding(.horizontal, 12)
         .padding(.top, 10)
         .padding(.bottom, 4)
+    }
+}
+
+/// Presence under the day bar, on the same time scale: where the user was at the Mac.
+struct PresenceLine: View {
+    let spans: [DateInterval]
+    let from: Date
+    let to: Date
+
+    var body: some View {
+        GeometryReader { geo in
+            let scale = geo.size.width / max(1, to.timeIntervalSince(from))
+            ForEach(Array(spans.enumerated()), id: \.offset) { _, s in
+                let a = max(s.start, from), b = min(s.end, to)
+                if a < b {
+                    Capsule().fill(Color.primary.opacity(0.28))
+                        .frame(width: max(2, b.timeIntervalSince(a) * scale), height: 2)
+                        .offset(x: a.timeIntervalSince(from) * scale)
+                        .help(L("Am Mac: %1$@–%2$@", Fmt.time.string(from: s.start), Fmt.time.string(from: s.end)))
+                }
+            }
+        }
+        .frame(height: 2)
+        .help(L("Wann du am Mac warst"))
     }
 }
 

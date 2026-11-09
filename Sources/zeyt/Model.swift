@@ -407,14 +407,19 @@ struct Reminder: Equatable {
         case off
         /// Outside the time window or on a weekend.
         case outside
+        /// The user is not at the Mac (presence detection on).
+        case away
         /// A label runs, or a break, the end of the day or an absence.
         case assigned(Entry?)
         /// Without a label since `since`; the next reminder is due at `due`.
         case due(since: Date, due: Date)
     }
 
-    /// `entries` of today; `last` is when the previous reminder was shown.
-    func status(entries: [Entry], now: Date, last: Date?) -> Status {
+    /// `entries` of today; `last` is when the previous reminder was shown. With presence detection,
+    /// `presence` is the span the user is in right now (nil: away) and the first span of today: no reminders
+    /// while away, the day starts with the first presence, and after a break the interval starts anew.
+    func status(entries: [Entry], now: Date, last: Date?,
+                presence: (current: DateInterval?, firstToday: Date?)? = nil) -> Status {
         guard enabled else { return .off }
         let cal = Calendar.current
         if weekdaysOnly, cal.isDateInWeekend(now) { return .outside }
@@ -424,9 +429,11 @@ struct Reminder: Equatable {
 
         let current = entries.last { $0.date <= now }
         if let current, current.isStop || current.absence != nil || !current.label.isEmpty { return .assigned(current) }
-        // Nothing yet today counts from the start of the window; an unlabeled entry from its start.
-        let since = max(current?.date ?? start, start)
-        let base = max(since, last ?? since)
+        if let presence, presence.current == nil { return .away }
+        // Nothing yet today counts from the start of the window (or the first presence); an unlabeled
+        // entry from its start.
+        let since = max(current?.date ?? start, start, presence?.firstToday ?? start)
+        let base = max(since, last ?? since, presence?.current?.start ?? since)
         let due = base.addingTimeInterval(TimeInterval(minutes * 60))
         return due < end ? .due(since: since, due: due) : .outside
     }
@@ -580,5 +587,163 @@ enum Fmt {
         }
         guard let h, let m, (0..<24).contains(h), (0..<60).contains(m) else { return nil }
         return (h, m)
+    }
+}
+
+// MARK: - Presence
+
+/// When the user was at the Mac: spans of input (or a running microphone), recorded every few seconds.
+/// Only times are kept, nothing about what was done.
+enum Presence {
+    /// Without input for this long the user counts as away; shorter absences don't split a span (setting).
+    static let awayAfter: TimeInterval = 3 * 60
+    static let awayChoices = [1, 2, 3, 5, 10]
+
+    /// One sample: the last input (or a running microphone) was at `lastInput`. Extends the last span up
+    /// to it, or starts a new span there after an absence longer than `awayAfter`.
+    static func record(_ spans: inout [DateInterval], lastInput: Date, awayAfter: TimeInterval = awayAfter) {
+        if let last = spans.last, lastInput.timeIntervalSince(last.end) <= awayAfter, lastInput >= last.start {
+            spans[spans.count - 1] = DateInterval(start: last.start, end: max(last.end, lastInput))
+        } else if spans.last.map({ lastInput > $0.end }) ?? true {
+            spans.append(DateInterval(start: lastInput, end: lastInput))
+        }
+    }
+
+    /// Spans touching the day of `day`, cut to that day.
+    static func spans(_ spans: [DateInterval], on day: Date) -> [DateInterval] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: day)
+        let end = cal.date(byAdding: .day, value: 1, to: start)!
+        return spans.compactMap { s in
+            let a = max(s.start, start), b = min(s.end, end)
+            return a < b ? DateInterval(start: a, end: b) : nil
+        }
+    }
+
+    /// Present right now: the last input is less than `awayAfter` ago.
+    static func isPresent(_ spans: [DateInterval], now: Date, awayAfter: TimeInterval = awayAfter) -> Bool {
+        guard let last = spans.last else { return false }
+        return now.timeIntervalSince(last.end) <= awayAfter
+    }
+
+    /// Absences of at least `minimum` between spans, after `after`.
+    static func gaps(_ spans: [DateInterval], after: Date, minimum: TimeInterval) -> [DateInterval] {
+        zip(spans, spans.dropFirst()).compactMap { a, b in
+            let start = max(a.end, after)
+            return b.start.timeIntervalSince(start) >= minimum ? DateInterval(start: start, end: b.start) : nil
+        }
+    }
+
+    /// Rounded to `minutes` of local time (5 like the input row by default), also in time zones that are
+    /// not a whole hour off UTC.
+    static func round(_ d: Date, minutes: Int = 5) -> Date {
+        let step = TimeInterval(max(1, minutes) * 60)
+        let offset = TimeInterval(TimeZone.current.secondsFromGMT(for: d))
+        let t = d.timeIntervalSinceReferenceDate + offset
+        return Date(timeIntervalSinceReferenceDate: (t / step).rounded() * step - offset)
+    }
+}
+
+/// What zeyt suggests from the presence: a start, a break, an end of day.
+enum Proposal: Equatable {
+    /// Present since `at`, nothing recorded today; `label` is the last work to continue.
+    case start(at: Date, label: String?)
+    /// Away `from`–`to` while `resume` ran: a break, then `resume` again.
+    case pause(from: Date, to: Date, resume: Entry)
+    /// The last entry of `day` is an open task; the user was last present at `at`.
+    case endOfDay(at: Date)
+
+    var isEndOfDay: Bool { if case .endOfDay = self { return true } else { return false } }
+
+    private static let idFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyyMMdd-HHmm"
+        return f
+    }()
+
+    /// Whether a proposal id is too old to be derived again (proposals look back a week): such ids need
+    /// not be remembered as dismissed.
+    static func isStale(id: String, now: Date) -> Bool {
+        let parts = id.split(separator: "-")
+        guard parts.count > 1, let day = idFormatter.date(from: parts[1] + "-0000") else { return true }
+        return now.timeIntervalSince(day) > 9 * 86400
+    }
+
+    /// Identity, for not offering a dismissed proposal again.
+    var id: String {
+        let f = Self.idFormatter
+        switch self {
+        case .start(let at, _): return "start-" + String(f.string(from: at).prefix(8))
+        // The resume entry by its time: entry ids are new after every reload of the log.
+        case .pause(let from, _, let resume): return "pause-\(f.string(from: from))-\(f.string(from: resume.date))"
+        case .endOfDay(let at): return "end-" + String(f.string(from: at).prefix(8))
+        }
+    }
+
+    /// The entries that carry it out.
+    var entries: [(Date, String)] {
+        switch self {
+        case .start(let at, let label): return [(at, label.map { "#" + $0 } ?? "")]
+        case .pause(let from, let to, let resume): return [(from, "pause"), (to, resume.text)]
+        case .endOfDay(let at): return [(at, "feierabend")]
+        }
+    }
+
+    struct Settings {
+        var start = true
+        var breaks = true
+        var endOfDay = true
+        var minBreak: TimeInterval = 15 * 60
+        var awayAfter = Presence.awayAfter
+        /// Proposed times are rounded to this many minutes.
+        var roundMinutes = 5
+        /// Days the reminder works on (weekdays only, time window), for the start proposal.
+        var reminder = Reminder()
+    }
+
+    /// The most pressing proposal, if any. `entries` are all entries, `spans` the presence.
+    static func derive(entries: [Entry], spans: [DateInterval], now: Date, settings: Settings,
+                       dismissed: Set<String> = []) -> Proposal? {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: now)
+        func open(_ p: Proposal?) -> Proposal? { p.flatMap { dismissed.contains($0.id) ? nil : $0 } }
+        func round(_ d: Date) -> Date { Presence.round(d, minutes: settings.roundMinutes) }
+
+        // An open task on a day before today (up to a week back) ends when the user was last there.
+        // Absences (vacation, sick) last the whole day and need no end.
+        if settings.endOfDay, let last = entries.last(where: { $0.date < today }), !last.isStop, last.absence == nil,
+           today.timeIntervalSince(last.date) < 7 * 86400 {
+            let day = Presence.spans(spans, on: last.date)
+            // Rounding must not carry the end into the next day.
+            let lastMinute = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: last.date))!.addingTimeInterval(-60)
+            if let end = day.last?.end, end > last.date.addingTimeInterval(5 * 60),
+               let p = open(.endOfDay(at: min(max(round(end), last.date.addingTimeInterval(5 * 60)), lastMinute))) {
+                return p
+            }
+        }
+        guard Presence.isPresent(spans, now: now, awayAfter: settings.awayAfter) else { return nil }
+        let todays = entries.filter { cal.isDate($0.date, inSameDayAs: now) && $0.date <= now }
+        let presentToday = Presence.spans(spans, on: now)
+
+        if todays.isEmpty {
+            guard settings.start else { return nil }
+            let r = settings.reminder
+            guard !(r.weekdaysOnly && cal.isDateInWeekend(now)),
+                  now >= today.addingTimeInterval(TimeInterval(r.from * 60) - 2 * 3600),
+                  now < today.addingTimeInterval(TimeInterval(r.to * 60)) else { return nil }
+            // Presence in the night (working past midnight, a short check) is not the start of the day.
+            let earliest = today.addingTimeInterval(TimeInterval(r.from * 60) - 2 * 3600)
+            guard let first = presentToday.first(where: { $0.end > earliest }) else { return nil }
+            let label = entries.last { $0.date < now && !$0.isStop && $0.absence == nil && !$0.label.isEmpty }?.label
+            return open(.start(at: round(max(first.start, earliest)), label: label))
+        }
+        // A break while a task ran: the latest absence long enough, the user back now.
+        guard settings.breaks, let current = todays.last, !current.isStop, current.absence == nil,
+              let gap = Presence.gaps(presentToday, after: current.date, minimum: settings.minBreak).last else { return nil }
+        // Rounding must not put the resume entry in the future.
+        let from = round(gap.start), to = min(round(gap.end), cal.dateInterval(of: .minute, for: now)!.start)
+        guard from > current.date, to > from else { return nil }
+        return open(.pause(from: from, to: to, resume: current))
     }
 }

@@ -15,7 +15,8 @@ import AppKit
 ///     burst 8                 after every following action, capture 8 frames ~16 ms apart (0 = off)
 ///     key up|down|left|right|enter|tab|esc|backspace|<character> [shift] [option] [cmd]
 ///     type text …             one real key event per character (space included)
-///     click x y               mouse click at x/y in points from the popover's top left
+///     click x y [button]      mouse click at x/y in points from the popover's top left ("button": through the
+///                             window, for buttons; plain clicks select the content of fields)
 ///     move x y                mouse moved there (hover)
 ///     wait 300                milliseconds
 ///     snap name               one frame
@@ -120,7 +121,7 @@ final class UITestScript {
         case "key": key(args); settle(line)
         case "type": typeChars(Array(arg), line)
         case "click", "move":
-            mouse(cmd, x: CGFloat(Double(args[0]) ?? 0), y: CGFloat(Double(args[1]) ?? 0))
+            mouse(cmd, x: CGFloat(Double(args[0]) ?? 0), y: CGFloat(Double(args[1]) ?? 0), viaWindow: args.contains("button"))
             settle(line)
         case "target":
             if arg == "calendar", let v = calendar(nil) { view = v } else { view = popoverView }
@@ -190,7 +191,7 @@ final class UITestScript {
         }
     }
 
-    private func mouse(_ kind: String, x: CGFloat, y: CGFloat) {
+    private func mouse(_ kind: String, x: CGFloat, y: CGFloat, viaWindow: Bool = false) {
         guard let window, let content = window.contentView else { return }
         // Script coordinates: points from the top left of the popover content.
         let inView = NSPoint(x: x, y: view.isFlipped ? y : view.bounds.height - y)
@@ -209,9 +210,10 @@ final class UITestScript {
         guard let down = event(.leftMouseDown), let up = event(.leftMouseUp),
               let hit = content.hitTest(content.convert(p, from: nil)) else { return }
         // SwiftUI buttons in a window (not the popover's text fields) take the click through the window.
-        if view !== popoverView {
+        // The mouse-up is queued first: link-style buttons run a tracking loop that waits for it.
+        if view !== popoverView || viaWindow {
+            NSApp.postEvent(up, atStart: false)
             window.sendEvent(down)
-            window.sendEvent(up)
             return
         }
         NSApp.postEvent(up, atStart: false)

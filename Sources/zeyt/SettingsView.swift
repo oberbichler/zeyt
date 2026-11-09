@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// Settings in tabs: general (prompts, menu bar, login item), export script, agent access.
+/// Settings in tabs: general (prompts, menu bar, login item), presence detection, export script, agent access.
 struct SettingsView: View {
     @ObservedObject var state: AppState
     @ObservedObject var api: AgentAPI
     @ObservedObject var store: EntryStore
+    @ObservedObject var tracker: PresenceTracker
+    @State private var confirmClear = false
     @State private var copied = false
     @State private var newUncounted = ""
 
@@ -13,6 +15,7 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $tab) {
             general.tabItem { Label(L("Allgemein"), systemImage: "gearshape") }.tag("general")
+            presence.tabItem { Label(L("Anwesenheit"), systemImage: "figure.stand") }.tag("presence")
             Form { ExportSettings(store: store) }
                 .formStyle(.grouped)
                 .tabItem { Label(L("Export"), systemImage: "square.and.arrow.up") }.tag("export")
@@ -117,10 +120,101 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
+    private var presence: some View {
+        Form {
+            Section {
+                Toggle(L("Anwesenheit erkennen"), isOn: $state.presenceEnabled)
+                if state.presenceEnabled {
+                    Picker(L("Als weg gilt nach"), selection: $state.awayMinutes) {
+                        ForEach(Presence.awayChoices, id: \.self) {
+                            Text($0 == 1 ? L("1 Minute ohne Eingabe") : L("%@ Minuten ohne Eingabe", "\($0)")).tag($0)
+                        }
+                    }
+                    Toggle(L("Mikrofon in Benutzung zählt als anwesend (Calls)"), isOn: $state.microphoneCounts)
+                    TimelineView(.periodic(from: .now, by: 15)) { context in
+                        Text(presenceStatus(context.date)).foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text(L("Erkennen"))
+            } footer: {
+                Text(L("zeyt merkt sich, wann du am Mac bist: Maus, Tastatur und laufendes Mikrofon zählen, gesperrter Bildschirm und Ruhezustand nicht. Kürzere Abwesenheiten als eingestellt gelten als durchgehend anwesend."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            if state.presenceEnabled {
+                Section {
+                    Toggle(L("Arbeitsbeginn vorschlagen"), isOn: $state.proposeStart)
+                    Toggle(L("Pausen vorschlagen"), isOn: $state.proposeBreaks)
+                    if state.proposeBreaks {
+                        Picker(L("Pause ab"), selection: $state.breakMinutes) {
+                            ForEach(AppState.breakChoices, id: \.self) { Text(L("%@ Minuten weg", "\($0)")).tag($0) }
+                        }
+                        Picker(L("Pausen eintragen"), selection: $state.autoBreaks) {
+                            Text(L("Nachfragen")).tag(false)
+                            Text(L("Automatisch, mit Rückgängig")).tag(true)
+                        }
+                    }
+                    Toggle(L("Vergessenen Feierabend vorschlagen"), isOn: $state.proposeEndOfDay)
+                    Picker(L("Zeiten runden auf"), selection: $state.roundMinutes) {
+                        ForEach(AppState.roundChoices, id: \.self) {
+                            Text($0 == 1 ? L("Minute genau") : L("%@ Minuten", "\($0)")).tag($0)
+                        }
+                    }
+                    Toggle(L("Vorschläge auch als Mitteilung"), isOn: $state.proposalNotifications)
+                } header: {
+                    Text(L("Vorschläge"))
+                } footer: {
+                    Text(L("Vorschläge erscheinen oben im Popover. Arbeitsbeginn nur an Tagen und Zeiten der Erinnerung; „Ignorieren“ und „War Arbeit“ gelten für diesen einen Vorschlag."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Section {
+                    Toggle(L("Erinnerung an Anwesenheit ausrichten"), isOn: $state.remindersFollowPresence)
+                } footer: {
+                    Text(L("Keine Erinnerung, solange du weg bist; der Tag beginnt mit deiner ersten Anwesenheit, und nach einer Pause läuft der Abstand neu."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+
+            Section {
+                Picker(L("Aufbewahren"), selection: $state.presenceKeepDays) {
+                    ForEach(AppState.keepChoices, id: \.self) { Text(L("%@ Tage", "\($0)")).tag($0) }
+                }
+                HStack {
+                    Text(L("Nur Zeiten, lokal in activity.csv"))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button(L("Anwesenheit löschen …")) { confirmClear = true }
+                }
+            } header: {
+                Text(L("Daten"))
+            }
+        }
+        .formStyle(.grouped)
+        .confirmationDialog(L("Alle aufgezeichneten Anwesenheiten löschen?"), isPresented: $confirmClear) {
+            Button(L("Löschen"), role: .destructive) { state.clearPresence() }
+        } message: {
+            Text(L("Einträge im Log bleiben unverändert."))
+        }
+    }
+
+    private func presenceStatus(_ now: Date) -> String {
+        let today = Fmt.duration(tracker.total(on: now))
+        if let current = tracker.current(now: now) {
+            return L("Gerade am Mac seit %1$@ · heute %2$@ h", Fmt.time.string(from: current.start), today)
+        }
+        if let last = tracker.spans.last, Calendar.current.isDateInToday(last.end) {
+            return L("Gerade nicht am Mac · zuletzt %1$@ · heute %2$@ h", Fmt.time.string(from: last.end), today)
+        }
+        return L("Heute noch nicht am Mac erkannt")
+    }
+
     static func describe(_ status: Reminder.Status) -> String {
         switch status {
         case .off: return L("Erinnerung aus")
         case .outside: return L("Gerade außerhalb der Erinnerungszeit")
+        case .away: return L("Gerade nicht am Mac – keine Erinnerung")
         case .assigned(let e):
             guard let e else { return L("Keine Erinnerung nötig") }
             if e.isStop { return e.isEndOfDay ? L("Feierabend – keine Erinnerung") : L("Pause – keine Erinnerung") }

@@ -30,7 +30,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 
 ## Echte Daten – vorsichtig
 
-- `~/Library/Application Support/zeyt/log.csv` (Einträge) und `labels.json`. Nie direkt ändern, außer
+- `~/Library/Application Support/zeyt/log.csv` (Einträge), `labels.json` und `activity.csv` (Anwesenheit). Nie direkt ändern, außer
   der Nutzer verlangt es; dann vorher sichern.
 - `backups/<Zeitstempel>/` darin: Stand vor jedem `./build.sh install` (die letzten 30).
 - Zum Ausprobieren eine Kopie nehmen: `ZEYT_DATA_DIR=/tmp/… ` (eigener Datenordner).
@@ -46,7 +46,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
   danach mit `./build.sh install` die echte App wieder starten.
 - **UI-Tests per Skript** (Layout, Fokus, Ruckeln): `./build.sh uitest` baut `build/zeyt-uitest.app` mit
   `Sources/zeyt/UITestScript.swift` (nur mit `-DZEYT_UITEST` kompiliert, Befehle im Dateikopf: `key`, `type`,
-  `click`, `snap`, `burst`, `frames`, `dump`, `reopen`, `appearance`, `settings`, `labels`, `calendar`, `notifications` …).
+  `click` (`click x y button` für Knöpfe), `snap`, `burst`, `frames`, `dump`, `reopen`, `appearance`, `settings`, `labels`, `calendar`, `notifications` …).
   Die Testinstanz hat die Bundle-ID `xyz.oberbichler.zeyt.uitest`, also eigene Einstellungen, und trägt sich
   nicht als Anmeldeobjekt ein. Start:
   `pkill -x zeyt; open -g -W --env ZEYT_DATA_DIR=<Kopie> --env ZEYT_UISCRIPT=<skript> --env ZEYT_UIOUT=<ordner> build/zeyt-uitest.app`,
@@ -76,9 +76,10 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `DayCopy.swift` | Tag kopieren/einfügen, Zwischenablage |
 | `LabelsView.swift` | Fenster „Labels“ (Account, Projekt) |
 | `CalendarView.swift` | Fenster „Kalender“: Monat in KW-Zeilen, rechts Zahlen zum Monat; Label/Account darin hebt dessen Tage hervor (`MonthGrid`, `DaySummary`, `PeriodStats` in `Model.swift`) |
-| `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Export, Agent) |
+| `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Anwesenheit, Export, Agent) |
 | `ExportScript.swift`, `Export.swift` | Export per JavaScript (JavaScriptCore), Vorlagen Chronos und CSV |
-| `Notifier.swift` | Erinnerung als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |
+| `Notifier.swift` | Erinnerung und Vorschläge als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |
+| `PresenceTracker.swift` | Anwesenheit (Eingaben, Sperre, Ruhezustand, Mikrofon) → `activity.csv`; Regeln `Presence`, `Proposal` (Beginn, Pause, Feierabend) in `Model.swift` |
 | `AgentAPI.swift`, `HTTPServer.swift` | REST-API auf 127.0.0.1:7239 mit Token |
 | `Banners.swift`, `Toast.swift` | Hinweise im Popover, kurze Meldungen |
 | `Localization.swift` | `L("…")` und `AppLanguage` (Sprache, Locale für Datumsformate) |

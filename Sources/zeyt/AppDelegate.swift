@@ -19,6 +19,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let notifier = Notifier()
     private var labelsWindow: NSWindow?
     private var calendarWindow: NSWindow?
+    private let tracker = PresenceTracker()
+    /// Proposals already shown as a notification (once each).
+    private var notifiedProposals: Set<String> = []
+    /// Proposals answered with "no" (kept, so they don't come back).
+    private var dismissedProposals = Set(UserDefaults.standard.stringArray(forKey: "dismissedProposals") ?? [])
+    /// Entries of the last automatically recorded break, for undo.
+    private var autoApplied: [Entry] = []
+    /// When the current proposal was posted as a notification: it replaces the reminder for one interval.
+    private var proposalNotifiedAt: Date?
 
     /// Opening zeyt again (Finder, Spotlight) shows the popover. Only one instance runs:
     /// LSMultipleInstancesProhibited in Info.plist, also against `open -n` and other copies.
@@ -28,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        configureTracker()
         NSApp.mainMenu = Self.mainMenu()
         // A time tracker that isn't running asks nothing: start at login by default,
         // once; switching it off in the settings sticks.
@@ -42,7 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePopover)
 
-        let hosting = NSHostingController(rootView: DayView(store: store, state: state))
+        let hosting = NSHostingController(rootView: DayView(store: store, state: state, tracker: tracker))
         hosting.sizingOptions = .preferredContentSize
         popover.contentViewController = hosting
         popover.behavior = .transient
@@ -68,6 +78,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             self?.showPopover()
             #endif
         }
+        state.applyProposal = { [weak self] p in self?.apply(p) }
+        state.clearPresence = { [weak self] in self?.tracker.clear() }
+        state.dismissProposal = { [weak self] p in self?.dismiss(p) }
+        notifier.onProposal = { [weak self] id, action, reply in self?.answerProposal(id: id, action: action, reply: reply) }
+        api.presence = { [weak self] day in self?.tracker.spans(on: day) ?? [] }
         state.openSettings = { [weak self] in
             self?.popover.performClose(nil)
             self?.showSettingsWindow()
@@ -139,6 +154,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
                                       })
         #endif
         Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(tick), userInfo: nil, repeats: true)
+        updateProposal(Date())
         updateReminderStatus()
     }
 
@@ -241,7 +257,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func showSettingsWindow(activate: Bool = true) {
         refreshNotificationsAllowed()
         if settingsWindow == nil {
-            let hosting = NSHostingController(rootView: SettingsView(state: state, api: api, store: store))
+            let hosting = NSHostingController(rootView: SettingsView(state: state, api: api, store: store, tracker: tracker))
             hosting.sizingOptions = .preferredContentSize
             let w = NSWindow(contentViewController: hosting)
             w.title = L("zeyt – Einstellungen")
@@ -301,10 +317,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         button.title = " \(name) · \(Fmt.duration(running.duration))"
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        tracker.save()
+    }
+
     @objc private func tick() {
         let now = Date()
         updateStatusItem()
+        configureTracker()
+        if state.presenceEnabled { tracker.sample(now: now) }
+        updateProposal(now)
         let status = updateReminderStatus(now)
+        // A proposal notification asks better than the plain reminder; unanswered, the reminder takes over
+        // after one interval.
+        if state.proposal.map({ !$0.isEndOfDay }) == true, let at = proposalNotifiedAt,
+           now < at.addingTimeInterval(TimeInterval(state.reminder.minutes * 60)) { return }
         guard case .due(let since, let due) = status else { return }
         if let until = snoozedUntil {
             // "In 10 Min. erinnern" wins over the interval.
@@ -321,7 +348,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     /// reminder comes at once.
     @discardableResult
     private func updateReminderStatus(_ now: Date = Date()) -> Reminder.Status {
-        let status = state.reminder.status(entries: store.entries(on: now), now: now, last: lastReminder)
+        let presence = state.presenceEnabled && state.remindersFollowPresence
+            ? (current: tracker.current(now: now), firstToday: tracker.spans(on: now).first?.start) : nil
+        let status = state.reminder.status(entries: store.entries(on: now), now: now, last: lastReminder, presence: presence)
         if case .due = status {} else { snoozedUntil = nil }
         if state.reminderStatus != status { state.reminderStatus = status }
         return status
@@ -336,6 +365,93 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             let current = store.entries(on: now).last { $0.date <= now }
             notifier.post(date: now, last: store.lastWork(before: now),
                           pauseSince: current?.isStop == true ? current?.date : nil, unlabeledSince: since)
+        }
+    }
+
+    /// Settings into the tracker before anything is saved (the keep days prune the file).
+    private func configureTracker() {
+        tracker.microphoneCounts = state.microphoneCounts
+        tracker.awayAfter = TimeInterval(state.awayMinutes * 60)
+        tracker.keepDays = state.presenceKeepDays
+    }
+
+    // MARK: Proposals
+
+    private func updateProposal(_ now: Date) {
+        let p = state.presenceEnabled
+            ? Proposal.derive(entries: store.entries, spans: tracker.spans, now: now,
+                              settings: state.proposalSettings, dismissed: dismissedProposals)
+            : nil
+        if state.proposal != p { state.proposal = p }
+        guard let p, !notifiedProposals.contains(p.id) else { return }
+        notifiedProposals.insert(p.id)
+        if state.autoBreaks, case .pause = p {
+            autoApplied = apply(p)
+            notifier.postApplied(p)
+        } else if state.proposalNotifications {
+            notifier.postProposal(p)
+            proposalNotifiedAt = Date()
+        }
+    }
+
+    @discardableResult
+    private func apply(_ p: Proposal, text: String? = nil) -> [Entry] {
+        // A start without a known label: the popover asks for it.
+        if case .start(let at, nil) = p, text == nil {
+            state.requestedDraftTime = at
+            showPopover()
+            return []
+        }
+        var added: [Entry] = []
+        for (i, (date, entryText)) in p.entries.enumerated() {
+            if let e = store.add(date: date, text: i == 0 ? text ?? entryText : entryText, dedupe: false) { added.append(e) }
+        }
+        notifier.removeProposal()
+        state.proposal = nil
+        remember(p)
+        // The next one at once (e.g. today's start after yesterday's end of day).
+        DispatchQueue.main.async { [weak self] in self?.updateProposal(Date()) }
+        return added
+    }
+
+    private func dismiss(_ p: Proposal) {
+        remember(p)
+        notifier.removeProposal()
+        if state.proposal == p { state.proposal = nil }
+        DispatchQueue.main.async { [weak self] in self?.updateProposal(Date()) }
+    }
+
+    /// Not offered again, also after a restart (applied ones too: an undone automatic break stays undone).
+    private func remember(_ p: Proposal) {
+        let now = Date()
+        dismissedProposals.insert(p.id)
+        dismissedProposals = dismissedProposals.filter { !Proposal.isStale(id: $0, now: now) }
+        UserDefaults.standard.set(dismissedProposals.sorted(), forKey: "dismissedProposals")
+    }
+
+    private func answerProposal(id: String, action: String, reply: String?) {
+        switch action {
+        case "undo":
+            // By time and text: entry ids are new after a reload of the log.
+            let undo = store.entries.filter { e in autoApplied.contains { $0.date == e.date && $0.text == e.text } }
+            undo.forEach { store.delete($0) }
+            autoApplied = []
+            return
+        case "open":
+            showPopover()
+            return
+        default: break
+        }
+        let now = Date()
+        guard let p = state.proposal ?? Proposal.derive(entries: store.entries, spans: tracker.spans, now: now,
+                                                        settings: state.proposalSettings),
+              p.id == id else { return }
+        switch action {
+        case "apply": apply(p)
+        case "reply":
+            if let reply, !reply.trimmingCharacters(in: .whitespaces).isEmpty { apply(p, text: Notifier.parse(reply)) }
+        case "dismiss": dismiss(p)
+        default: break
         }
     }
 }
