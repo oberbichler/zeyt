@@ -9,9 +9,13 @@ final class MenuItem: NSObject {
     private init(_ action: @escaping () -> Void) { self.action = action }
     @objc private func run() { action() }
 
-    static func make(_ title: String, key: String = "", action: @escaping () -> Void) -> NSMenuItem {
+    /// `symbol` shows only from macOS 26 on, where system menus carry symbols; before, menus have none.
+    static func make(_ title: String, key: String = "", symbol: String? = nil, action: @escaping () -> Void) -> NSMenuItem {
         let handler = MenuItem(action)
         let item = NSMenuItem(title: title, action: #selector(run), keyEquivalent: key)
+        if #available(macOS 26, *), let symbol {
+            item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        }
         item.target = handler
         item.representedObject = handler
         return item

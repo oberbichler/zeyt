@@ -208,7 +208,7 @@
 
 /* Calendar */
 "Kalender (⌘K)" = "Calendrier (⌘K)";
-"Kalender …" = "Calendrier …";
+"Kalender" = "Calendrier";
 "zeyt – Kalender" = "zeyt – Calendrier";
 "Vormonat (←)" = "Mois précédent (←)";
 "Folgemonat (→)" = "Mois suivant (→)";
@@ -230,11 +230,11 @@
 /* Presence */
 "#%1$@ ab %2$@" = "#%1$@ dès %2$@";
 "%1$@ war noch offen; zuletzt am Mac um %2$@." = "%1$@ était encore ouvert ; dernière présence au Mac à %2$@.";
-"Ab %@ eintragen …" = "Saisir dès %@ …";
+"Ab %@ eintragen …" = "Saisir dès %@…";
 "Als Pause eintragen? Danach weiter mit %@." = "Saisir comme pause ? Ensuite reprendre %@.";
 "Am Mac: %1$@–%2$@" = "Au Mac : %1$@–%2$@";
-"Andere Tätigkeit …" = "Autre activité …";
-"Andere …" = "Autre …";
+"Andere Tätigkeit …" = "Autre activité…";
+"Andere …" = "Autre…";
 "Anwesenheit" = "Présence";
 "Anwesenheit erkennen" = "Détecter la présence";
 "Arbeit ab %@ eintragen? Antworten mit #label Kommentar" = "Saisir le travail dès %@ ? Répondre avec #libellé commentaire";
@@ -256,7 +256,7 @@
 "1 Minute ohne Eingabe" = "1 minute sans saisie";
 "Alle aufgezeichneten Anwesenheiten löschen?" = "Supprimer toutes les présences enregistrées ?";
 "Als weg gilt nach" = "Absent après";
-"Anwesenheit löschen …" = "Supprimer la présence …";
+"Anwesenheit löschen …" = "Supprimer la présence…";
 "Arbeitsbeginn vorschlagen" = "Proposer le début du travail";
 "Aufbewahren" = "Conserver";
 "Automatisch, mit Rückgängig" = "Automatiquement, avec annulation";

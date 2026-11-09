@@ -930,40 +930,35 @@ struct DayView: View {
         let menu = NSMenu()
         menu.autoenablesItems = false
         let unassigned = store.unassignedCount
-        let labels = MenuItem.make(L("Labels verwalten …"), key: "l") { state.openLabels() }
-        if unassigned > 0 {
-            let title = NSMutableAttributedString(string: L("Labels verwalten …") + "  ")
-            title.append(NSAttributedString(string: L("%@ offen", "\(unassigned)"), attributes: [
-                .foregroundColor: NSColor.systemOrange, .font: NSFont.systemFont(ofSize: 11, weight: .semibold),
-            ]))
-            labels.attributedTitle = title
-        }
+        let labels = MenuItem.make(L("Labels verwalten …"), key: "l", symbol: "tag") { state.openLabels() }
+        // The system badge for the labels without account or project.
+        if unassigned > 0 { labels.badge = NSMenuItemBadge(string: L("%@ offen", "\(unassigned)")) }
         menu.addItem(labels)
-        menu.addItem(MenuItem.make(L("Kalender …"), key: "k") { state.openCalendar() })
+        menu.addItem(MenuItem.make(L("Kalender"), key: "k", symbol: "calendar") { state.openCalendar() })
         menu.addItem(.separator())
-        let copy = MenuItem.make(L("Tag kopieren"), key: "c") { copyDay(day) }
+        let copy = MenuItem.make(L("Tag kopieren"), key: "c", symbol: "doc.on.doc") { copyDay(day) }
         copy.keyEquivalentModifierMask = [.command, .option]
         menu.addItem(copy)
-        let pasteItem = MenuItem.make(L("Einfügen"), key: "v") { paste(on: [day]) }
+        let pasteItem = MenuItem.make(L("Einfügen"), key: "v", symbol: "doc.on.clipboard") { paste(on: [day]) }
         pasteItem.keyEquivalentModifierMask = [.command, .option]
         pasteItem.isEnabled = DayClipboard.items != nil
         menu.addItem(pasteItem)
-        menu.addItem(MenuItem.make(L("In mehrere Tage einfügen …")) { pastingRange = true })
-
+        menu.addItem(MenuItem.make(L("In mehrere Tage einfügen …"), symbol: "calendar.badge.plus") { pastingRange = true })
         menu.addItem(.separator())
-        let agent = MenuItem.make(L("Prompt für Agent kopieren")) { copyAgentPrompt() }
-        agent.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: nil)
+        menu.addItem(MenuItem.make(L("%@ exportieren …", Fmt.monthTitle.string(from: day)), key: "e",
+                                   symbol: "square.and.arrow.up") { state.export(day) })
+        let agent = MenuItem.make(L("Prompt für Agent kopieren"), symbol: "sparkles") { copyAgentPrompt() }
         agent.toolTip = L("In Claude Code o. Ä. einfügen – der Agent kann dann Einträge lesen und bearbeiten.")
         menu.addItem(agent)
-        menu.addItem(MenuItem.make(L("Einstellungen …"), key: ",") { state.openSettings() })
-        menu.addItem(MenuItem.make(L("%@ exportieren …", Fmt.monthTitle.string(from: day)), key: "e") { state.export(day) })
         menu.addItem(.separator())
-        menu.addItem(MenuItem.make(L("Über zeyt")) {
+        // Like an app menu: about and settings together, quit last.
+        menu.addItem(MenuItem.make(L("Über zeyt"), symbol: "info.circle") {
             NSApp.activate(ignoringOtherApps: true)
             NSApp.orderFrontStandardAboutPanel(nil)
         })
+        menu.addItem(MenuItem.make(L("Einstellungen …"), key: ",", symbol: "gearshape") { state.openSettings() })
         menu.addItem(.separator())
-        menu.addItem(MenuItem.make(L("Beenden"), key: "q") { NSApp.terminate(nil) })
+        menu.addItem(MenuItem.make(L("Beenden"), key: "q", symbol: "power") { NSApp.terminate(nil) })
         menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
     }
 

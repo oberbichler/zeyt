@@ -208,7 +208,7 @@
 
 /* Calendar */
 "Kalender (⌘K)" = "Kalender (⌘K)";
-"Kalender …" = "Kalender …";
+"Kalender" = "Kalender";
 "zeyt – Kalender" = "zeyt – Kalender";
 "Vormonat (←)" = "Vorige maand (←)";
 "Folgemonat (→)" = "Volgende maand (→)";
@@ -230,11 +230,11 @@
 /* Presence */
 "#%1$@ ab %2$@" = "#%1$@ vanaf %2$@";
 "%1$@ war noch offen; zuletzt am Mac um %2$@." = "%1$@ stond nog open; laatst achter de Mac om %2$@.";
-"Ab %@ eintragen …" = "Vanaf %@ invoeren …";
+"Ab %@ eintragen …" = "Vanaf %@ invoeren…";
 "Als Pause eintragen? Danach weiter mit %@." = "Als pauze invoeren? Daarna verder met %@.";
 "Am Mac: %1$@–%2$@" = "Achter de Mac: %1$@–%2$@";
-"Andere Tätigkeit …" = "Andere activiteit …";
-"Andere …" = "Andere …";
+"Andere Tätigkeit …" = "Andere activiteit…";
+"Andere …" = "Andere…";
 "Anwesenheit" = "Aanwezigheid";
 "Anwesenheit erkennen" = "Aanwezigheid herkennen";
 "Arbeit ab %@ eintragen? Antworten mit #label Kommentar" = "Werk vanaf %@ invoeren? Antwoord met #label opmerking";
@@ -256,7 +256,7 @@
 "1 Minute ohne Eingabe" = "1 minuut zonder invoer";
 "Alle aufgezeichneten Anwesenheiten löschen?" = "Alle vastgelegde aanwezigheid verwijderen?";
 "Als weg gilt nach" = "Weg na";
-"Anwesenheit löschen …" = "Aanwezigheid verwijderen …";
+"Anwesenheit löschen …" = "Aanwezigheid verwijderen…";
 "Arbeitsbeginn vorschlagen" = "Begin van het werk voorstellen";
 "Aufbewahren" = "Bewaren";
 "Automatisch, mit Rückgängig" = "Automatisch, met ongedaan maken";
