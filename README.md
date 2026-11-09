@@ -2,7 +2,7 @@
 
 # zeyt
 
-Time tracking in the macOS menu bar. Click the clock to see your day; when nothing is running,
+Time tracking in the macOS menu bar. Click the # in the menu bar to see your day; when nothing is running,
 zeyt sends a notification asking what you are working on.
 
 <picture>

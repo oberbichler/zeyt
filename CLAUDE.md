@@ -65,7 +65,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 
 | Datei | Inhalt |
 | --- | --- |
-| `main.swift`, `AppDelegate.swift` | Start, Menüleisten-Uhr, Popover, Fenster, Erinnerungs-Takt, Autostart |
+| `main.swift`, `AppDelegate.swift` | Start, Menüleisten-Symbol (#), Popover, Fenster, Erinnerungs-Takt, Autostart |
 | `Migration.swift` | übernimmt einmalig Einstellungen von `local.tmr` (früherer Name TMR) |
 | `AppState.swift` | gemeinsamer Zustand von Popover und Einstellungen |
 | `Model.swift` | testbare Regeln: Labels, Vorschläge, Zeiten, `DayText` (Tag als Text), `Block` (Dauer, Art) |

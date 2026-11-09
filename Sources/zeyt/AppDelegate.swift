@@ -48,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
         #endif
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "clock", accessibilityDescription: "zeyt")
+        statusItem.button?.image = NSImage(systemSymbolName: "number", accessibilityDescription: "zeyt")
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePopover)
 
@@ -303,7 +303,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func updateStatusItem() {
         guard let button = statusItem.button, !popover.isShown else { return }
-        button.image = NSImage(systemSymbolName: state.reminder.enabled ? "clock" : "pause.circle", accessibilityDescription: "zeyt")
+        button.image = NSImage(systemSymbolName: state.reminder.enabled ? "number" : "pause.circle", accessibilityDescription: "zeyt")
         let now = Date()
         let running = Block.compute(store.entries(on: now), now: now).last { $0.running }
         button.imagePosition = .imageLeading
