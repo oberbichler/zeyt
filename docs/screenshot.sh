@@ -64,10 +64,21 @@ f = "%Y-%m-%d %H:%M:%S"
 first, lunch, back = (now - timedelta(minutes=m) for m in (today[0][0] + 3, today[3][0] - 2, today[4][0] - 1))
 open(f"{out}/activity.csv", "w").write(
     f"Von,Bis\n{first.strftime(f)},{lunch.strftime(f)}\n{back.strftime(f)},{(now + timedelta(minutes=30)).strftime(f)}\n")
+# A second data folder for the break proposal: today without the break and what followed, the user
+# away over lunch and back now.
+import os, shutil
+os.makedirs(f"{out}/proposal")
+shutil.copy(f"{out}/labels.json", f"{out}/proposal/labels.json")
+lines = open(f"{out}/log.csv").read().splitlines(keepends=True)
+cut = {(now - timedelta(minutes=m)).strftime("%Y-%m-%d %H:%M") for m, _ in today[3:]}
+open(f"{out}/proposal/log.csv", "w").writelines(l for l in lines if l[:16] not in cut)
+shutil.copy(f"{out}/activity.csv", f"{out}/proposal/activity.csv")
 # Status item as zeyt shows it: label and duration of the running entry
 running = datetime.now() - (now - timedelta(minutes=today[-1][0]))
 minutes = int(running.total_seconds()) // 60
 open(f"{out}/title", "w").write(f" webshop · {minutes // 60}:{minutes % 60:02d}")
+minutes = int((datetime.now() - (now - timedelta(minutes=today[2][0]))).total_seconds()) // 60
+open(f"{out}/title-proposal", "w").write(f" api · {minutes // 60}:{minutes % 60:02d}")
 EOF
 cat > "$TMP/script.txt" <<'EOF'
 notifications on
@@ -82,6 +93,7 @@ type #we
 wait 300
 snap entry
 settings general
+settings presence
 settings export
 labels
 calendar CALENDAR_MONTH
@@ -96,11 +108,19 @@ EOF
 sed -i '' "s/CALENDAR_MONTH/$(( $(date +%-d) < 20 ? -1 : 0 ))/" "$TMP/script.txt"
 
 ./build.sh uitest
-# Settings of the test instance (own domain): show the list of labels left out of the hours.
+# Settings of the test instance (own domain): show the list of labels left out of the hours, offer
+# proposals afresh.
 defaults write xyz.oberbichler.zeyt.uitest uncountedEnabled -bool true
+defaults delete xyz.oberbichler.zeyt.uitest dismissedProposals 2>/dev/null || true
+defaults delete xyz.oberbichler.zeyt.uitest autoBreaks 2>/dev/null || true
 pkill -x zeyt || true
 open -g -W --env ZEYT_DATA_DIR="$TMP" --env ZEYT_UISCRIPT="$TMP/script.txt" --env ZEYT_UIOUT="$TMP/out" build/zeyt-uitest.app \
     --args -AppleLanguages "(en)"
+
+printf 'notifications on\nmove 1 1\nappearance light\nwait 500\nsnap proposal\nquit\n' > "$TMP/proposal.txt"
+open -g -W --env ZEYT_DATA_DIR="$TMP/proposal" --env ZEYT_UISCRIPT="$TMP/proposal.txt" --env ZEYT_UIOUT="$TMP/out-proposal" \
+    build/zeyt-uitest.app --args -AppleLanguages "(en)"
+mv $TMP/out-proposal/*-proposal.png "$TMP/out/"
 
 TITLE=$(<"$TMP/title")
 shot() { swift docs/make-screenshot.swift $TMP/out/*-$1.png "docs/$2.png" "${@:3}" }
@@ -108,7 +128,9 @@ shot light screenshot-light light popover "$TITLE"
 shot dark screenshot-dark dark popover "$TITLE"
 shot entry entry light popover "$TITLE"
 shot settings-general reminders light window "zeyt – Settings"
+shot settings-presence presence light window "zeyt – Settings"
 shot settings-export export light window "zeyt – Settings"
+shot proposal proposal light popover "$(<"$TMP/title-proposal")"
 shot labels labels light window "zeyt – Labels"
 shot calendar-highlight calendar light window "zeyt – Calendar"
 rm -rf "$TMP"

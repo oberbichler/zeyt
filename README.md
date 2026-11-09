@@ -18,8 +18,9 @@ zeyt sends a notification asking what you are working on.
 - **Menu bar**: shows the running label and its duration at a glance.
 - **Presence detection**: zeyt notes when you are at the Mac (input, screen lock, sleep, a call on the
   microphone) and suggests the start of work, breaks you were away for and a forgotten end of day,
-  as a banner and a notification. Only the times are kept, locally. Its own settings tab sets when
-  you count as away, which suggestions you get, rounding, automatic breaks with undo and how long
+  as a banner in the popover and as a notification. Breaks can also be recorded automatically, with
+  undo. A thin line under the day bar shows when you were there. Only the times are kept, locally.
+  Its own settings tab sets when you count as away, which suggestions you get, rounding and how long
   the data is kept.
 - **Reminders**: a notification when no label is running, with configurable interval, hours and
   workdays, and none while you are away. Answer it directly, continue the last task, take a break, end the day or snooze.
@@ -36,7 +37,8 @@ zeyt sends a notification asking what you are working on.
   clipboard.
 - **Export**: your own JavaScript turns a month into JSON, CSV, TSV or text. Templates for Chronos
   and CSV are included.
-- **Agent API**: a local REST API lets AI agents such as Claude Code read and edit entries.
+- **Agent API**: a local REST API lets AI agents such as Claude Code read and edit entries and
+  read the detected presence.
   “Copy prompt for agent” in the gear menu copies a ready-made prompt.
 - **Local data**: a plain CSV file you can edit by hand.
 
@@ -46,6 +48,12 @@ zeyt sends a notification asking what you are working on.
       <sub>Type <code>#</code> and pick a label; account and project come along.</sub></td>
     <td width="50%"><img src="docs/reminders.png" alt="Reminder settings"><br>
       <sub>Reminders: interval, hours and workdays.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/proposal.png" alt="A break proposal in the popover"><br>
+      <sub>Away over lunch while a task ran: record it as a break.</sub></td>
+    <td><img src="docs/presence.png" alt="Presence settings"><br>
+      <sub>Presence: when you count as away, suggestions, rounding, data.</sub></td>
   </tr>
   <tr>
     <td><img src="docs/labels.png" alt="Labels window with hours per label and account"><br>
@@ -78,8 +86,8 @@ Without permission to send notifications there are no reminders; zeyt then shows
 ## Data
 
 Everything stays local in `~/Library/Application Support/zeyt`: `log.csv` (one line per entry,
-`yyyy-MM-dd HH:mm,"#label comment"`), `labels.json` and `activity.csv` (when you were at the Mac, the
-last 60 days).
+`yyyy-MM-dd HH:mm,"#label comment"`), `labels.json` and `activity.csv` (when you were at the Mac, by default
+the last 60 days; delete it any time in the settings).
 
 The export (Settings → Export) calls `transform(input)` with every day of a month and returns
 `json(…)`, `csv(…)`, `tsv(…)` or `text(…)`; the templates document the structure of `input`. The
