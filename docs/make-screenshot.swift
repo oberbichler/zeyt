@@ -93,7 +93,7 @@ if isPopover {
         drawSymbol(image, x: x)
     }
 
-    let icon = symbol("clock")
+    let icon = symbol("number")
     let text = NSAttributedString(string: title, attributes: [.font: font, .foregroundColor: fg])
     let itemWidth = icon.size.width + text.size().width + 16
     x -= itemWidth + 10
