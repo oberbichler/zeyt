@@ -78,11 +78,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             self?.showPopover()
             #endif
         }
-        state.applyProposal = { [weak self] p in self?.apply(p) }
+        state.applyProposal = { [weak self] p, text in self?.apply(p, text: text) }
         state.clearPresence = { [weak self] in self?.tracker.clear() }
         state.dismissProposal = { [weak self] p in self?.dismiss(p) }
         notifier.onProposal = { [weak self] id, action, reply in self?.answerProposal(id: id, action: action, reply: reply) }
         api.presence = { [weak self] day in self?.tracker.spans(on: day) ?? [] }
+        api.state = state
         state.openSettings = { [weak self] in
             self?.popover.performClose(nil)
             self?.showSettingsWindow()

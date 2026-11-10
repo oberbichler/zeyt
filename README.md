@@ -37,9 +37,10 @@ zeyt sends a notification asking what you are working on.
   clipboard.
 - **Export**: your own JavaScript turns a month into JSON, CSV, TSV or text. Templates for Chronos
   and CSV are included.
-- **Agent API**: a local REST API lets AI agents such as Claude Code read and edit entries and
-  read the detected presence.
-  “Copy prompt for agent” in the gear menu copies a ready-made prompt.
+- **Agent API**: a local REST API lets AI agents such as Claude Code read and edit entries, rename
+  labels, read the month's figures and the detected presence, answer suggestions, change reminder and
+  presence settings and run the export. “Copy Prompt for Agent” in the gear menu copies a ready-made
+  prompt; your own instructions for the agent go in the settings.
 - **Local data**: a plain CSV file you can edit by hand.
 
 <table>

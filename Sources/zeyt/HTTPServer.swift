@@ -4,9 +4,13 @@ import Network
 struct HTTPRequest {
     let method: String
     let path: String
+    /// Path segments, each percent-decoded on its own (a label may contain "/" as %2F).
+    let segments: [String]
     let query: [String: String]
     let headers: [String: String]
     let body: Data
+    /// The request target could not be read as a URL.
+    var malformed = false
 
     /// Parses a complete request, or returns nil if more data is needed.
     static func parse(_ data: Data) -> HTTPRequest? {
@@ -26,10 +30,16 @@ struct HTTPRequest {
         let body = data[end.upperBound..<end.upperBound + length]
 
         let components = URLComponents(string: "http://localhost" + start[1])
+        guard components != nil else {
+            return HTTPRequest(method: String(start[0]), path: "", segments: [], query: [:], headers: headers,
+                               body: Data(body), malformed: true)
+        }
         var query: [String: String] = [:]
         for item in components?.queryItems ?? [] { query[item.name] = item.value ?? "" }
 
-        return HTTPRequest(method: String(start[0]), path: components?.path ?? "/",
+        let segments = (components?.percentEncodedPath ?? "/").split(separator: "/")
+            .map { $0.removingPercentEncoding ?? String($0) }
+        return HTTPRequest(method: String(start[0]), path: components?.path ?? "/", segments: segments,
                            query: query, headers: headers, body: Data(body))
     }
 
@@ -44,7 +54,8 @@ struct HTTPResponse {
     var body: Data
 
     static func json(_ value: Any, status: Int = 200) -> HTTPResponse {
-        let data = (try? JSONSerialization.data(withJSONObject: value, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+        // Fragments too: a bare null (no proposal) would otherwise raise an exception, not an error.
+        let data = (try? JSONSerialization.data(withJSONObject: value, options: [.prettyPrinted, .sortedKeys, .fragmentsAllowed])) ?? Data()
         return HTTPResponse(status: status, contentType: "application/json; charset=utf-8", body: data)
     }
 
@@ -57,8 +68,8 @@ struct HTTPResponse {
     }
 
     var data: Data {
-        let reason = [200: "OK", 201: "Created", 400: "Bad Request", 401: "Unauthorized",
-                      404: "Not Found", 405: "Method Not Allowed"][status] ?? "Status"
+        let reason = [200: "OK", 201: "Created", 400: "Bad Request", 401: "Unauthorized", 404: "Not Found",
+                      405: "Method Not Allowed", 409: "Conflict", 500: "Internal Server Error"][status] ?? "Status"
         let head = "HTTP/1.1 \(status) \(reason)\r\nContent-Type: \(contentType)\r\n"
             + "Content-Length: \(body.count)\r\nConnection: close\r\n\r\n"
         return Data(head.utf8) + body

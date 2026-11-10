@@ -247,7 +247,19 @@ final class UITestScript {
             if v is NSTextField || v is TimeSegmentView {
                 let r = v.convert(v.bounds, to: view)
                 let top = view.isFlipped ? r.minY : view.bounds.height - r.maxY
-                let text = (v as? NSTextField).map { "'\($0.stringValue)' ph '\($0.placeholderAttributedString?.string ?? "")'" } ?? "time"
+                func describe(_ a: NSAttributedString?) -> String {
+                    guard let a, a.length > 0 else { return "-" }
+                    let font = a.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+                    let color = a.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor
+                    return "'\(a.string)' \(font?.fontName ?? "?") \(color.map { "\($0)" } ?? "?")"
+                }
+                let text = (v as? NSTextField).map { f -> String in
+                    var s = "'\(f.stringValue)' ph \(describe(f.placeholderAttributedString))"
+                    if let editor = f.currentEditor() as? NSTextView {
+                        s += " editor ph \(describe(editor.value(forKey: "placeholderAttributedString") as? NSAttributedString))"
+                    }
+                    return s
+                } ?? "time"
                 lines.append(String(format: "x %6.1f…%6.1f  y %6.1f h %4.1f  ", r.minX, r.maxX, top, r.height) + text)
             }
             v.subviews.forEach(walk)

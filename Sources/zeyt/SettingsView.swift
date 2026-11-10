@@ -271,6 +271,28 @@ struct SettingsView: View {
                 Text(L("Ein KI-Agent (z. B. Claude Code) kann über die API Einträge lesen und bearbeiten. Den Prompt gibt es auch im Zahnrad-Menü; dort schaltet „Prompt für Agent kopieren“ den Zugriff bei Bedarf ein."))
                     .font(.caption).foregroundStyle(.secondary)
             }
+
+            Section {
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $api.instructions)
+                        .font(.system(size: 12))
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 90)
+                    if api.instructions.isEmpty {
+                        Text(L("z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“"))
+                            .font(.system(size: 12))
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 1)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
+                    }
+                }
+            } header: {
+                Text(L("Hinweise für den Agent"))
+            } footer: {
+                Text(L("Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
     }

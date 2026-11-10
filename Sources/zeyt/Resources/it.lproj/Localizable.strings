@@ -280,3 +280,7 @@
 "Vorschläge erscheinen oben im Popover. Arbeitsbeginn nur an Tagen und Zeiten der Erinnerung; „Ignorieren“ und „War Arbeit“ gelten für diesen einen Vorschlag." = "I suggerimenti appaiono in alto nel popover. Inizio del lavoro solo nei giorni e orari del promemoria; «Ignora» e «Era lavoro» valgono per quel suggerimento.";
 "Zeiten runden auf" = "Arrotonda gli orari a";
 "zeyt merkt sich, wann du am Mac bist: Maus, Tastatur und laufendes Mikrofon zählen, gesperrter Bildschirm und Ruhezustand nicht. Kürzere Abwesenheiten als eingestellt gelten als durchgehend anwesend." = "zeyt annota quando sei al Mac: contano mouse, tastiera e microfono attivo, non lo schermo bloccato né lo stop. Assenze più brevi dell’impostazione contano come presenza continua.";
+
+"z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "ad es. «Riunioni sempre su #interno, commenti in inglese, chiedere prima di ogni modifica.»";
+"Hinweise für den Agent" = "Istruzioni per l’agente";
+"Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "L’agente le legge con la guida quando si connette; hanno la precedenza sulle regole predefinite. Solo per te, restano in locale.";

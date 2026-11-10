@@ -281,9 +281,8 @@ struct DayTextTests {
 struct PasteTests {
     @Test func pasteReplaceAppendEmptyAndUndo() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("zeyt-test-\(UUID().uuidString)")
-        setenv("ZEYT_DATA_DIR", dir.path, 1)
-        defer { unsetenv("ZEYT_DATA_DIR"); try? FileManager.default.removeItem(at: dir) }
-        let store = EntryStore()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = EntryStore(directory: dir)
         let cal = Calendar.current
         let mon = cal.date(from: DateComponents(year: 2026, month: 10, day: 12))!
         let tue = cal.date(byAdding: .day, value: 1, to: mon)!

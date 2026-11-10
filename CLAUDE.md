@@ -80,7 +80,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `ExportScript.swift`, `Export.swift` | Export per JavaScript (JavaScriptCore), Vorlagen Chronos und CSV |
 | `Notifier.swift` | Erinnerung und Vorschläge als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |
 | `PresenceTracker.swift` | Anwesenheit (Eingaben, Sperre, Ruhezustand, Mikrofon) → `activity.csv`; Regeln `Presence`, `Proposal` (Beginn, Pause, Feierabend) in `Model.swift` |
-| `AgentAPI.swift`, `HTTPServer.swift` | REST-API auf 127.0.0.1:7239 mit Token |
+| `AgentAPI.swift`, `HTTPServer.swift` | REST-API auf 127.0.0.1:7239 mit Token; die Anleitung unter `GET /` ist zugleich der Prompt-Inhalt für Agents (Regeln, Hinweise des Nutzers aus den Einstellungen). Neue Funktionen der App dort als Endpunkt und in der Anleitung nachziehen, Tests in `AgentAPITests` |
 | `Banners.swift`, `Toast.swift` | Hinweise im Popover, kurze Meldungen |
 | `Localization.swift` | `L("…")` und `AppLanguage` (Sprache, Locale für Datumsformate) |
 | `UITestScript.swift` | Skript-Steuerung für UI-Tests (nur in `./build.sh uitest`) |
