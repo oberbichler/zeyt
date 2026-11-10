@@ -33,7 +33,13 @@ enum LabelKind: String, Codable, CaseIterable, Identifiable {
     }
 
     /// Kinds from labels.json, mirrored here by the store so an entry knows its kind on its own.
-    nonisolated(unsafe) static var assigned: [String: LabelKind] = [:]
+    /// Read from any thread (export, tests in parallel), written by the store: behind a lock.
+    static var assigned: [String: LabelKind] {
+        get { assignedLock.withLock { _assigned } }
+        set { assignedLock.withLock { _assigned = newValue } }
+    }
+    private static let assignedLock = NSLock()
+    nonisolated(unsafe) private static var _assigned: [String: LabelKind] = [:]
 
     /// Before labels had a kind, these names were the absences; they stay so until set otherwise.
     static let legacy: [String: LabelKind] = ["urlaub": .vacation, "krank": .sick, "kind-krank": .childSick]
@@ -148,9 +154,10 @@ final class EntryStore: ObservableObject {
         try? fm.moveItem(at: old, to: dir)
     }
 
-    init() {
-        let dir = Self.directory
-        Self.migrate(to: dir)
+    /// `directory` other than the default (tests) skips the migration from TMR.
+    init(directory: URL? = nil) {
+        let dir = directory ?? Self.directory
+        if directory == nil { Self.migrate(to: dir) }
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         url = dir.appendingPathComponent("log.csv")
         labelsURL = dir.appendingPathComponent("labels.json")

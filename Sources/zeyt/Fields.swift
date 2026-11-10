@@ -12,14 +12,40 @@ struct FocusRequest: Equatable {
     var caret: Caret = .end
 }
 
+/// Draws text like the field editor does: the editor sits in a transparent layer without font smoothing,
+/// so a smoothed cell looked bolder and darker than the same text while editing ("label" jumped on focus).
+final class FieldCell: NSTextFieldCell {
+    override func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
+        guard let ctx = NSGraphicsContext.current?.cgContext else {
+            return super.drawInterior(withFrame: cellFrame, in: controlView)
+        }
+        ctx.saveGState()
+        ctx.setShouldSmoothFonts(false)
+        super.drawInterior(withFrame: cellFrame, in: controlView)
+        ctx.restoreGState()
+    }
+}
+
 final class FocusTextField: NSTextField {
     var onFocus: (() -> Void)?
     var onBlur: (() -> Void)?
+
+    override class var cellClass: AnyClass? {
+        get { FieldCell.self }
+        set {}
+    }
 
     override func becomeFirstResponder() -> Bool {
         let ok = super.becomeFirstResponder()
         if ok { onFocus?() }
         return ok
+    }
+
+    static func setEditorPlaceholder(of field: NSTextField, _ placeholder: NSAttributedString?) {
+        let selector = NSSelectorFromString("setPlaceholderAttributedString:")
+        guard let placeholder, let editor = field.currentEditor() as? NSTextView, editor.responds(to: selector) else { return }
+        editor.perform(selector, with: placeholder)
+        editor.needsDisplay = true
     }
 
     override func textDidEndEditing(_ notification: Notification) {
@@ -90,11 +116,7 @@ struct KeyTextField: NSViewRepresentable {
         if f.placeholderAttributedString != ph {
             f.placeholderAttributedString = ph
             // The field editor keeps the placeholder it started with; hand it the new one.
-            if let editor = f.currentEditor() as? NSTextView,
-               editor.responds(to: NSSelectorFromString("setPlaceholderAttributedString:")) {
-                editor.perform(NSSelectorFromString("setPlaceholderAttributedString:"), with: ph)
-                editor.needsDisplay = true
-            }
+            FocusTextField.setEditorPlaceholder(of: f, ph)
         }
         let editing = f.currentEditor() != nil
         let shown = editing ? text : (idleText ?? text)

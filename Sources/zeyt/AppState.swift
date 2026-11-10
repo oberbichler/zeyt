@@ -82,7 +82,8 @@ final class AppState: ObservableObject {
     var clearPresence: () -> Void = {}
     /// What the presence suggests right now (popover banner, notification).
     @Published var proposal: Proposal?
-    var applyProposal: (Proposal) -> Void = { _ in }
+    /// Carries out a proposal; the text replaces the first entry's (a start with another label).
+    var applyProposal: (Proposal, String?) -> Void = { _, _ in }
     var dismissProposal: (Proposal) -> Void = { _ in }
     /// Input time the popover should take (e.g. "other activity since 08:10"); taken by the popover.
     @Published var requestedDraftTime: Date?

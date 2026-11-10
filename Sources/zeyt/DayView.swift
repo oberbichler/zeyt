@@ -254,7 +254,7 @@ struct DayView: View {
                         .padding(.vertical, 4)
                 }
                 if let p = state.proposal, p.isEndOfDay || isToday {
-                    ProposalBanner(proposal: p, apply: { state.applyProposal(p) }, other: {
+                    ProposalBanner(proposal: p, apply: { state.applyProposal(p, nil) }, other: {
                         if case .start(let at, _) = p { state.requestedDraftTime = at }
                     }, dismiss: { state.dismissProposal(p) })
                     .padding(.vertical, 4)

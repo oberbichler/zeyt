@@ -92,6 +92,13 @@ import Testing
         #expect(o.warnings == ["ohne Label: 01:00 h ohne Account, nicht gebucht", "#gamma: 01:00 h ohne Account, nicht gebucht"])
     }
 
+    @Test func sameCommentOnlyOnce() {
+        let labels = ["a": LabelInfo(account: "ACME", project: "TICKET-100")]
+        let o = export(["2026-07-07 08:00 #a Bugfixes", "2026-07-07 10:00 pause", "2026-07-07 10:30 #a Bugfixes",
+                        "2026-07-07 12:00 feierabend"], labels: labels)
+        #expect(json(o)["bookings"]?.first?["comment"] as? String == "Bugfixes")
+    }
+
     @Test func scriptChoosesTheFormat() {
         let rows = "[[\"a\", \"b;c\", 'say \"hi\"'], [1, null, \"x\\ty\"]]"
         let tsv = export([], script: "function transform(i) { return tsv(\(rows)) }")

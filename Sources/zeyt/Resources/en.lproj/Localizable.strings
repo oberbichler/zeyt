@@ -56,7 +56,7 @@
 "Diese Woche" = "This week";
 "Dieser Monat" = "This month";
 "Duplizieren – startet zur Eingabezeit" = "Duplicate – starts at the entered time";
-"Ein KI-Agent (z. B. Claude Code) kann über die API Einträge lesen und bearbeiten. Den Prompt gibt es auch im Zahnrad-Menü; dort schaltet „Prompt für Agent kopieren“ den Zugriff bei Bedarf ein." = "An AI agent (e.g. Claude Code) can read and edit entries via the API. The prompt is also in the gear menu; there, “Copy prompt for agent” turns on access if needed.";
+"Ein KI-Agent (z. B. Claude Code) kann über die API Einträge lesen und bearbeiten. Den Prompt gibt es auch im Zahnrad-Menü; dort schaltet „Prompt für Agent kopieren“ den Zugriff bei Bedarf ein." = "An AI agent (e.g. Claude Code) can read and edit entries via the API. The prompt is also in the gear menu; there, “Copy Prompt for Agent” turns on access if needed.";
 "Einfügen" = "Paste";
 "Einsetzen" = "Paste";
 "Einstellungen …" = "Settings…";
@@ -280,3 +280,7 @@
 "Vorschläge erscheinen oben im Popover. Arbeitsbeginn nur an Tagen und Zeiten der Erinnerung; „Ignorieren“ und „War Arbeit“ gelten für diesen einen Vorschlag." = "Suggestions appear at the top of the popover. Start of work only on the days and hours of the reminder; “Ignore” and “Was work” apply to that one suggestion.";
 "Zeiten runden auf" = "Round times to";
 "zeyt merkt sich, wann du am Mac bist: Maus, Tastatur und laufendes Mikrofon zählen, gesperrter Bildschirm und Ruhezustand nicht. Kürzere Abwesenheiten als eingestellt gelten als durchgehend anwesend." = "zeyt notes when you are at the Mac: mouse, keyboard and a running microphone count, a locked screen and sleep don’t. Absences shorter than set count as present throughout.";
+
+"z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "e.g. “Always book meetings on #internal, comments in English, ask before every change.”";
+"Hinweise für den Agent" = "Instructions for the agent";
+"Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "The agent reads them with the guide when it connects; they take precedence over the default rules. Only for you, they stay local.";

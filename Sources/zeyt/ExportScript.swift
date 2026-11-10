@@ -54,9 +54,15 @@ enum ExportScript {
     static let key = "exportScript"
 
     /// The script from the settings, or the Chronos template.
-    static var current: String {
-        let s = UserDefaults.standard.string(forKey: key) ?? ""
-        return s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Template.chronos.script : s
+    static var current: String { current(in: .standard) }
+
+    static func current(in defaults: UserDefaults) -> String {
+        isCustom(in: defaults) ? defaults.string(forKey: key)! : Template.chronos.script
+    }
+
+    /// Whether the settings hold an own script (else the Chronos template runs).
+    static func isCustom(in defaults: UserDefaults) -> Bool {
+        !(defaults.string(forKey: key) ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     /// Runs `script` on `input`. Thread-safe: every call gets its own context.
@@ -267,7 +273,7 @@ enum ExportScript {
     //   Tage nur mit Abwesenheit fallen weg, sonst zählt die Anwesenheit
     //   nur vom ersten bis zum Ende des letzten Arbeitseintrags.
     // - Tage ohne Feierabend werden nicht exportiert.
-    // - bookings: Arbeitszeit je Account und Projekt, die Kommentare
+    // - bookings: Arbeitszeit je Account und Projekt, die Kommentare (gleiche einmal)
     //   mit "; " verbunden. Achtung, über Kreuz: der Account ist
     //   "project_name", das Projekt "account_name".
     // - working_hours: "breaks" ist die Zeit dazwischen ohne Arbeit
@@ -304,7 +310,7 @@ enum ExportScript {
             rows.push(row);
           }
           row.minutes += e.minutes;
-          if (e.description) row.comments.push(e.description);
+          if (e.description && !row.comments.includes(e.description)) row.comments.push(e.description);
         }
         for (const r of rows) {
           out.bookings.push({
