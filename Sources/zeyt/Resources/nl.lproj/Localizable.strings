@@ -284,3 +284,6 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "bijv. „Meetings altijd op #intern boeken, opmerkingen in het Engels, vraag vóór elke wijziging.”";
 "Hinweise für den Agent" = "Instructies voor de agent";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "De agent leest ze bij het verbinden samen met de handleiding; ze gaan voor de standaardregels. Alleen voor jou, ze blijven lokaal.";
+"Zeitleiste über die ganze Anwesenheit" = "Tijdlijn over de hele aanwezigheid";
+"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "De balk boven de invoer loopt van je eerste tot je laatste aanwezigheid van de dag, niet alleen van de eerste tot de laatste invoer.";
+"%@ · neuer Eintrag" = "%@ · nieuwe invoer";

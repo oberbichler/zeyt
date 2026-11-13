@@ -509,6 +509,67 @@ struct Block: Identifiable {
     }
 }
 
+/// The day bar's time axis: from the first entry (or presence) to the end of the day's entries (or the last
+/// presence), linear, so that a point on the bar is a time.
+struct Timeline: Equatable {
+    let start: Date
+    let end: Date
+    /// Where the bar ends because of the entries: end of day, now (running) or the last start (open).
+    let entriesEnd: Date?
+
+    static let step = 10
+
+    /// nil when there is nothing to show: no entry with a duration and (with `presence`) no presence.
+    static func make(_ blocks: [Block], presence: [DateInterval] = []) -> Timeline? {
+        let timed = blocks.filter { $0.duration > 0 }
+        var lo = timed.first?.entry.date
+        var hi = timed.compactMap(\.end).max()
+        let entriesEnd = hi
+        // A span carried over from the evening before (cut at midnight) belongs to that day.
+        let presence = presence.filter { $0.start != Calendar.current.startOfDay(for: $0.start) }
+        if let a = presence.first?.start, let b = presence.map(\.end).max() {
+            lo = min(lo ?? a, a)
+            hi = max(hi ?? b, b)
+        }
+        guard let lo, let hi, hi > lo else { return nil }
+        return Timeline(start: lo, end: hi, entriesEnd: entriesEnd)
+    }
+
+    var length: TimeInterval { end.timeIntervalSince(start) }
+
+    /// Position 0…1 of a time on the bar.
+    func fraction(_ d: Date) -> Double { d.timeIntervalSince(start) / length }
+
+    /// Time at position 0…1 of the bar.
+    func date(at fraction: Double) -> Date { start.addingTimeInterval(min(1, max(0, fraction)) * length) }
+
+    /// Time at a position, to `step` minutes – where a click between entries creates one.
+    func snapped(at fraction: Double) -> Date { Presence.round(date(at: fraction), minutes: Self.step) }
+
+    /// The entry starting at that minute, if there is one.
+    static func entry(at d: Date, in entries: [Entry]) -> Entry? {
+        entries.first { abs($0.date.timeIntervalSince(d)) < 60 }
+    }
+
+    /// What a click on the bar does.
+    enum Target: Equatable {
+        /// Go to this entry's row.
+        case entry(Entry)
+        /// A new entry at this time.
+        case new(Date)
+    }
+
+    /// A click near the start of an entry (within `tolerance` of the bar's width) goes to that entry; one in
+    /// between creates an entry at the time to `step` minutes, unless one starts at that minute already.
+    func target(at fraction: Double, tolerance: Double, in entries: [Entry]) -> Target {
+        let f = min(1, max(0, fraction))
+        let near = entries.map { ($0, abs(self.fraction($0.date) - f)) }.filter { $0.1 <= tolerance }
+        if let hit = near.min(by: { $0.1 < $1.1 }) { return .entry(hit.0) }
+        let at = snapped(at: f)
+        return Self.entry(at: at, in: entries).map { .entry($0) } ?? .new(at)
+    }
+}
+
 enum Fmt {
     static let time: DateFormatter = {
         let f = DateFormatter()

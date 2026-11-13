@@ -284,3 +284,6 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "e.g. “Always book meetings on #internal, comments in English, ask before every change.”";
 "Hinweise für den Agent" = "Instructions for the agent";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "The agent reads them with the guide when it connects; they take precedence over the default rules. Only for you, they stay local.";
+"Zeitleiste über die ganze Anwesenheit" = "Timeline spans the whole presence";
+"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "The bar above the entries reaches from your first to your last presence of the day, not only from the first to the last entry.";
+"%@ · neuer Eintrag" = "%@ · new entry";

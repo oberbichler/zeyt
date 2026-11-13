@@ -284,3 +284,6 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "np. „Spotkania zawsze na #wewn, komentarze po angielsku, pytaj przed każdą zmianą.”";
 "Hinweise für den Agent" = "Wskazówki dla agenta";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "Agent czyta je razem z instrukcją przy łączeniu; mają pierwszeństwo przed regułami domyślnymi. Tylko dla ciebie, zostają lokalnie.";
+"Zeitleiste über die ganze Anwesenheit" = "Oś czasu obejmuje całą obecność";
+"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "Pasek nad wpisami sięga od pierwszej do ostatniej obecności w ciągu dnia, a nie tylko od pierwszego do ostatniego wpisu.";
+"%@ · neuer Eintrag" = "%@ · nowy wpis";

@@ -68,6 +68,10 @@ final class AppState: ObservableObject {
     @Published var remindersFollowPresence = UserDefaults.standard.object(forKey: "remindersFollowPresence") as? Bool ?? true {
         didSet { UserDefaults.standard.set(remindersFollowPresence, forKey: "remindersFollowPresence") }
     }
+    /// The day bar reaches from the first to the last presence, not only over the entries.
+    @Published var timelineCoversPresence = UserDefaults.standard.object(forKey: "timelineCoversPresence") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(timelineCoversPresence, forKey: "timelineCoversPresence") }
+    }
     @Published var presenceKeepDays = UserDefaults.standard.object(forKey: "presenceKeepDays") as? Int ?? 60 {
         didSet { UserDefaults.standard.set(presenceKeepDays, forKey: "presenceKeepDays") }
     }

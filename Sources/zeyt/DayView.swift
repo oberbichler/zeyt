@@ -78,7 +78,7 @@ struct DayView: View {
             VStack(spacing: 0) {
                 header(ctx)
                 Divider().opacity(0.6)
-                if ctx.blocks.contains(where: { $0.duration > 0 }) { dayBar(ctx) }
+                dayBar(ctx)
                 list(ctx)
                 if let toast { toastView(toast) }
                 if let p = pendingPaste {
@@ -239,8 +239,28 @@ struct DayView: View {
 
     // MARK: Day bar
 
+    @ViewBuilder
     private func dayBar(_ ctx: Ctx) -> some View {
-        DayBar(blocks: ctx.blocks, presence: state.presenceEnabled ? tracker.spans(on: day) : []) { color($0, ctx) }
+        let presence = state.presenceEnabled ? tracker.spans(on: day) : []
+        if let tl = Timeline.make(ctx.blocks, presence: state.timelineCoversPresence ? presence : []) {
+            DayBar(timeline: tl, blocks: ctx.blocks, entries: ctx.entries, presence: presence,
+                   presentNow: isToday && state.presenceEnabled && tracker.current(now: ctx.now) != nil,
+                   color: { color($0, ctx) },
+                   onClick: { barClick($0) })
+        }
+    }
+
+    /// Click on the day bar: near the start of an entry, its row; in between, a new, empty entry there.
+    private func barClick(_ target: Timeline.Target) {
+        ac = nil
+        switch target {
+        case .entry(let e):
+            focus(.rowLabel(e.id), quiet: true)
+        case .new(let at):
+            guard Calendar.current.isDate(at, inSameDayAs: day),
+                  let added = store.add(date: at, text: "", dedupe: false) else { return }
+            focus(.rowLabel(added.id))
+        }
     }
 
     // MARK: List
