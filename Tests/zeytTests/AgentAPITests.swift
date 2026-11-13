@@ -14,6 +14,7 @@ import Testing
     let savedReminder: Reminder
     let savedAway: Int
     let savedTimeline: Bool
+    let savedTimelineMinutes: Int
 
     init() {
         store = EntryStore(directory: dir)
@@ -22,6 +23,7 @@ import Testing
         savedReminder = state.reminder
         savedAway = state.awayMinutes
         savedTimeline = state.timelineCoversPresence
+        savedTimelineMinutes = state.timelineMinutes
     }
 
     deinit {
@@ -33,6 +35,7 @@ import Testing
         state.reminder = savedReminder
         state.awayMinutes = savedAway
         state.timelineCoversPresence = savedTimeline
+        state.timelineMinutes = savedTimelineMinutes
     }
 
     /// One request as it comes over the wire; returns status and parsed JSON (or the text).
@@ -229,10 +232,13 @@ import Testing
             #expect(call("PATCH", "/api/settings", bad).0 == 400, "\(bad)")
         }
         #expect(state.reminder.minutes == 45 && state.awayMinutes == 5)
-        let timeline = !state.timelineCoversPresence
-        #expect(call("PATCH", "/api/settings", ["presence": ["timeline": timeline]]).0 == 200)
-        #expect(state.timelineCoversPresence == timeline)
-        #expect(call("PATCH", "/api/settings", ["presence": ["timeline": "yes"]]).0 == 400)
+        let covers = !state.timelineCoversPresence
+        #expect(call("PATCH", "/api/settings", ["timeline": ["coversPresence": covers, "minutes": 15]]).0 == 200)
+        #expect(state.timelineCoversPresence == covers && state.timelineMinutes == 15)
+        #expect(call("PATCH", "/api/settings", ["timeline": ["minutes": 7]]).0 == 400)
+        #expect(call("PATCH", "/api/settings", ["timeline": ["coversPresence": "yes"]]).0 == 400)
+        #expect(call("PATCH", "/api/settings", ["presence": ["timeline": true]]).0 == 400)
+        #expect(state.timelineMinutes == 15)
     }
 
     // MARK: Proposals

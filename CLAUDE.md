@@ -76,7 +76,7 @@ täglich und lässt Änderungen und Fixes über Claude machen.
 | `DayCopy.swift` | Tag kopieren/einfügen, Zwischenablage |
 | `LabelsView.swift` | Fenster „Labels“ (Account, Projekt) |
 | `CalendarView.swift` | Fenster „Kalender“: Monat in KW-Zeilen, rechts Zahlen zum Monat; Label/Account darin hebt dessen Tage hervor (`MonthGrid`, `DaySummary`, `PeriodStats` in `Model.swift`) |
-| `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Anwesenheit, Export, Agent) |
+| `SettingsView.swift`, `ExportSettings.swift` | Einstellungen (Tabs Allgemein, Erinnerung, Anwesenheit, Vorschläge, Export, Agent) |
 | `ExportScript.swift`, `Export.swift` | Export per JavaScript (JavaScriptCore), Vorlagen Chronos und CSV |
 | `Notifier.swift` | Erinnerung und Vorschläge als macOS-Mitteilung mit Aktionen (Regel: `Reminder` in `Model.swift`) |
 | `PresenceTracker.swift` | Anwesenheit (Eingaben, Sperre, Ruhezustand, Mikrofon) → `activity.csv`; Regeln `Presence`, `Proposal` (Beginn, Pause, Feierabend) in `Model.swift` |

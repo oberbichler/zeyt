@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "bijv. „Meetings altijd op #intern boeken, opmerkingen in het Engels, vraag vóór elke wijziging.”";
 "Hinweise für den Agent" = "Instructies voor de agent";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "De agent leest ze bij het verbinden samen met de handleiding; ze gaan voor de standaardregels. Alleen voor jou, ze blijven lokaal.";
-"Zeitleiste über die ganze Anwesenheit" = "Tijdlijn over de hele aanwezigheid";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "De balk boven de invoer loopt van je eerste tot je laatste aanwezigheid van de dag, niet alleen van de eerste tot de laatste invoer.";
 "%@ · neuer Eintrag" = "%@ · nieuwe invoer";
+"Zeitleiste" = "Tijdlijn";
+"Auflösung" = "Resolutie";
+"Einschalten" = "Inschakelen";
+"Über die ganze Anwesenheit des Tages" = "Over de hele aanwezigheid van de dag";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "Suggesties komen uit de aanwezigheidsdetectie.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Wijs de balk boven de invoer aan om de tijd in deze resolutie te zien. Een klik op het begin van een invoer springt naar die regel; daartussen voegt hij een invoer op dat tijdstip toe. Met aanwezigheidsdetectie kan de balk van je eerste tot je laatste aanwezigheid lopen.";

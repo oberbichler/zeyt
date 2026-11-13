@@ -20,13 +20,13 @@ zeyt sends a notification asking what you are working on.
   microphone) and suggests the start of work, breaks you were away for and a forgotten end of day,
   as a banner in the popover and as a notification. Breaks can also be recorded automatically, with
   undo. A thin line under the day bar shows when you were there. Only the times are kept, locally.
-  Its own settings tab sets when you count as away, which suggestions you get, rounding and how long
-  the data is kept.
+  Two settings tabs set when you count as away and how long the data is kept, and which suggestions
+  you get and how times are rounded.
 - **Reminders**: a notification when no label is running, with configurable interval, hours and
   workdays, and none while you are away. Answer it directly, continue the last task, take a break, end the day or snooze.
 - **Day view**: timeline of the day, week strip, hours per day and calendar week, and person-days
   (1 PD = 8 h). Point at the timeline to see the time; click the start of an entry to jump to it, or anywhere
-  in between to add one at that time. With presence detection, it covers your whole presence of the day. Absences such as vacation or sick days are left out of the hours, if you like.
+  in between to add one at that time (to 10 minutes, adjustable). With presence detection, it covers your whole presence of the day. Absences such as vacation or sick days are left out of the hours, if you like.
 - **Calendar**: a month in calendar weeks with hours per day and week. Alongside, the month's
   figures: workdays, average day, start and end, breaks, hours per label and account, absences.
   Point at a label or account to highlight the days you worked on it, with the time per day;

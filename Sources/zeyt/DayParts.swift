@@ -240,7 +240,7 @@ struct RowAction: View {
 
 /// The day as one bar of its tasks and breaks on a linear time axis, with start and end below.
 /// Hovering shows what a click does: near the start of an entry it goes to that row, in between it
-/// creates an entry at that time (to 10 minutes).
+/// creates an entry at that time (to the timeline's step, 10 minutes by default).
 struct DayBar: View {
     let timeline: Timeline
     let blocks: [Block]

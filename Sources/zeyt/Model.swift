@@ -516,11 +516,13 @@ struct Timeline: Equatable {
     let end: Date
     /// Where the bar ends because of the entries: end of day, now (running) or the last start (open).
     let entriesEnd: Date?
+    /// Resolution in minutes: hovering shows and a click creates times to this step (setting).
+    var step = 10
 
-    static let step = 10
+    static let steps = [1, 5, 10, 15, 30]
 
     /// nil when there is nothing to show: no entry with a duration and (with `presence`) no presence.
-    static func make(_ blocks: [Block], presence: [DateInterval] = []) -> Timeline? {
+    static func make(_ blocks: [Block], presence: [DateInterval] = [], step: Int = 10) -> Timeline? {
         let timed = blocks.filter { $0.duration > 0 }
         var lo = timed.first?.entry.date
         var hi = timed.compactMap(\.end).max()
@@ -532,7 +534,7 @@ struct Timeline: Equatable {
             hi = max(hi ?? b, b)
         }
         guard let lo, let hi, hi > lo else { return nil }
-        return Timeline(start: lo, end: hi, entriesEnd: entriesEnd)
+        return Timeline(start: lo, end: hi, entriesEnd: entriesEnd, step: step)
     }
 
     var length: TimeInterval { end.timeIntervalSince(start) }
@@ -544,7 +546,7 @@ struct Timeline: Equatable {
     func date(at fraction: Double) -> Date { start.addingTimeInterval(min(1, max(0, fraction)) * length) }
 
     /// Time at a position, to `step` minutes – where a click between entries creates one.
-    func snapped(at fraction: Double) -> Date { Presence.round(date(at: fraction), minutes: Self.step) }
+    func snapped(at fraction: Double) -> Date { Presence.round(date(at: fraction), minutes: step) }
 
     /// The entry starting at that minute, if there is one.
     static func entry(at d: Date, in entries: [Entry]) -> Entry? {

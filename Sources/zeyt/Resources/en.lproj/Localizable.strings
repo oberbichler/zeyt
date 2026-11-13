@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "e.g. “Always book meetings on #internal, comments in English, ask before every change.”";
 "Hinweise für den Agent" = "Instructions for the agent";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "The agent reads them with the guide when it connects; they take precedence over the default rules. Only for you, they stay local.";
-"Zeitleiste über die ganze Anwesenheit" = "Timeline spans the whole presence";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "The bar above the entries reaches from your first to your last presence of the day, not only from the first to the last entry.";
 "%@ · neuer Eintrag" = "%@ · new entry";
+"Zeitleiste" = "Timeline";
+"Auflösung" = "Resolution";
+"Einschalten" = "Turn On";
+"Über die ganze Anwesenheit des Tages" = "Across the whole presence of the day";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "Suggestions come from presence detection.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Point at the bar above the entries to see the time at this resolution. A click at the start of an entry jumps to its row; in between, it adds an entry at that time. With presence detection, the bar can reach from your first to your last presence.";

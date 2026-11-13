@@ -242,7 +242,8 @@ struct DayView: View {
     @ViewBuilder
     private func dayBar(_ ctx: Ctx) -> some View {
         let presence = state.presenceEnabled ? tracker.spans(on: day) : []
-        if let tl = Timeline.make(ctx.blocks, presence: state.timelineCoversPresence ? presence : []) {
+        if let tl = Timeline.make(ctx.blocks, presence: state.timelineCoversPresence ? presence : [],
+                                    step: state.timelineMinutes) {
             DayBar(timeline: tl, blocks: ctx.blocks, entries: ctx.entries, presence: presence,
                    presentNow: isToday && state.presenceEnabled && tracker.current(now: ctx.now) != nil,
                    color: { color($0, ctx) },

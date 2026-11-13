@@ -46,6 +46,11 @@ import Testing
         #expect(tl.snapped(at: 0.5) == d("2026-11-09 09:00"))   // 09:03
         #expect(tl.snapped(at: 0.53) == d("2026-11-09 09:10"))  // 09:06:36
         #expect(tl.snapped(at: 2) == d("2026-11-09 10:00"))     // clamped to the end
+        // Other resolutions (setting).
+        let fine = try #require(Timeline.make(blocks([("08:03", "#a"), ("10:03", "feierabend")]), step: 1))
+        #expect(fine.snapped(at: 0) == d("2026-11-09 08:03"))
+        let coarse = try #require(Timeline.make(blocks([("08:03", "#a"), ("10:03", "feierabend")]), step: 30))
+        #expect(coarse.snapped(at: 0.53) == d("2026-11-09 09:00"))
     }
 
     @Test func clickNearAStartGoesToTheEntryElseCreatesOne() throws {
