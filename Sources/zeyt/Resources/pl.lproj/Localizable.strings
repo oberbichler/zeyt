@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "np. „Spotkania zawsze na #wewn, komentarze po angielsku, pytaj przed każdą zmianą.”";
 "Hinweise für den Agent" = "Wskazówki dla agenta";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "Agent czyta je razem z instrukcją przy łączeniu; mają pierwszeństwo przed regułami domyślnymi. Tylko dla ciebie, zostają lokalnie.";
-"Zeitleiste über die ganze Anwesenheit" = "Oś czasu obejmuje całą obecność";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "Pasek nad wpisami sięga od pierwszej do ostatniej obecności w ciągu dnia, a nie tylko od pierwszego do ostatniego wpisu.";
 "%@ · neuer Eintrag" = "%@ · nowy wpis";
+"Zeitleiste" = "Oś czasu";
+"Auflösung" = "Dokładność";
+"Einschalten" = "Włącz";
+"Über die ganze Anwesenheit des Tages" = "Przez całą obecność w ciągu dnia";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "Sugestie pochodzą z wykrywania obecności.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Wskaż pasek nad wpisami, aby zobaczyć godzinę z tą dokładnością. Kliknięcie na początku wpisu przechodzi do jego wiersza; pomiędzy dodaje wpis o tej godzinie. Z wykrywaniem obecności pasek może sięgać od pierwszej do ostatniej obecności.";

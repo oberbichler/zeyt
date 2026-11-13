@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Settings in tabs: general (prompts, menu bar, login item), presence detection, export script, agent access.
+/// Settings in tabs: general (menu bar, login item, timeline, hours), reminder, presence detection, suggestions,
+/// export script, agent access. Each tab stays short enough for small screens.
 struct SettingsView: View {
     @ObservedObject var state: AppState
     @ObservedObject var api: AgentAPI
@@ -15,7 +16,9 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $tab) {
             general.tabItem { Label(L("Allgemein"), systemImage: "gearshape") }.tag("general")
+            reminder.tabItem { Label(L("Erinnerung"), systemImage: "bell") }.tag("reminder")
             presence.tabItem { Label(L("Anwesenheit"), systemImage: "figure.stand") }.tag("presence")
+            proposals.tabItem { Label(L("Vorschläge"), systemImage: "lightbulb") }.tag("proposals")
             Form { ExportSettings(store: store) }
                 .formStyle(.grouped)
                 .tabItem { Label(L("Export"), systemImage: "square.and.arrow.up") }.tag("export")
@@ -36,6 +39,21 @@ struct SettingsView: View {
             Section(L("Allgemein")) {
                 Toggle(L("Bei Anmeldung starten"), isOn: Binding(get: { state.launchAtLogin }, set: { state.launchAtLogin = $0 }))
                 Toggle(L("Laufende Tätigkeit in der Menüleiste zeigen"), isOn: $state.showInMenuBar)
+            }
+
+            Section {
+                Picker(L("Auflösung"), selection: $state.timelineMinutes) {
+                    ForEach(Timeline.steps, id: \.self) {
+                        Text($0 == 1 ? L("Minute genau") : L("%@ Minuten", "\($0)")).tag($0)
+                    }
+                }
+                Toggle(L("Über die ganze Anwesenheit des Tages"), isOn: $state.timelineCoversPresence)
+                    .disabled(!state.presenceEnabled)
+            } header: {
+                Text(L("Zeitleiste"))
+            } footer: {
+                Text(L("Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit."))
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {
@@ -80,6 +98,12 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
+        }
+        .formStyle(.grouped)
+    }
+
+    private var reminder: some View {
+        Form {
             Section {
                 Toggle(L("Erinnern, wenn der aktuellen Zeit kein Label zugeordnet ist"), isOn: $state.reminder.enabled)
                 if state.reminder.enabled {
@@ -116,32 +140,20 @@ struct SettingsView: View {
                 Text(L("Erinnert, solange heute noch nichts eingetragen ist oder der laufende Eintrag kein Label hat – zuerst nach der eingestellten Zeit, dann im selben Abstand. Keine Erinnerung während einer Pause, nach Feierabend und bei Urlaub, Krank oder Kind krank."))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            if state.presenceEnabled {
+                Section {
+                    Toggle(L("Erinnerung an Anwesenheit ausrichten"), isOn: $state.remindersFollowPresence)
+                } footer: {
+                    Text(L("Keine Erinnerung, solange du weg bist; der Tag beginnt mit deiner ersten Anwesenheit, und nach einer Pause läuft der Abstand neu."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
     }
 
-    private var presence: some View {
+    private var proposals: some View {
         Form {
-            Section {
-                Toggle(L("Anwesenheit erkennen"), isOn: $state.presenceEnabled)
-                if state.presenceEnabled {
-                    Picker(L("Als weg gilt nach"), selection: $state.awayMinutes) {
-                        ForEach(Presence.awayChoices, id: \.self) {
-                            Text($0 == 1 ? L("1 Minute ohne Eingabe") : L("%@ Minuten ohne Eingabe", "\($0)")).tag($0)
-                        }
-                    }
-                    Toggle(L("Mikrofon in Benutzung zählt als anwesend (Calls)"), isOn: $state.microphoneCounts)
-                    TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text(presenceStatus(context.date)).foregroundStyle(.secondary)
-                    }
-                }
-            } header: {
-                Text(L("Erkennen"))
-            } footer: {
-                Text(L("zeyt merkt sich, wann du am Mac bist: Maus, Tastatur und laufendes Mikrofon zählen, gesperrter Bildschirm und Ruhezustand nicht. Kürzere Abwesenheiten als eingestellt gelten als durchgehend anwesend."))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-
             if state.presenceEnabled {
                 Section {
                     Toggle(L("Arbeitsbeginn vorschlagen"), isOn: $state.proposeStart)
@@ -168,20 +180,40 @@ struct SettingsView: View {
                     Text(L("Vorschläge erscheinen oben im Popover. Arbeitsbeginn nur an Tagen und Zeiten der Erinnerung; „Ignorieren“ und „War Arbeit“ gelten für diesen einen Vorschlag."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
-
+            } else {
                 Section {
-                    Toggle(L("Zeitleiste über die ganze Anwesenheit"), isOn: $state.timelineCoversPresence)
-                } footer: {
-                    Text(L("Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag."))
-                        .font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Text(L("Vorschläge kommen aus der Anwesenheitserkennung."))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button(L("Einschalten")) { state.presenceEnabled = true }
+                    }
                 }
+            }
+        }
+        .formStyle(.grouped)
+    }
 
-                Section {
-                    Toggle(L("Erinnerung an Anwesenheit ausrichten"), isOn: $state.remindersFollowPresence)
-                } footer: {
-                    Text(L("Keine Erinnerung, solange du weg bist; der Tag beginnt mit deiner ersten Anwesenheit, und nach einer Pause läuft der Abstand neu."))
-                        .font(.caption).foregroundStyle(.secondary)
+    private var presence: some View {
+        Form {
+            Section {
+                Toggle(L("Anwesenheit erkennen"), isOn: $state.presenceEnabled)
+                if state.presenceEnabled {
+                    Picker(L("Als weg gilt nach"), selection: $state.awayMinutes) {
+                        ForEach(Presence.awayChoices, id: \.self) {
+                            Text($0 == 1 ? L("1 Minute ohne Eingabe") : L("%@ Minuten ohne Eingabe", "\($0)")).tag($0)
+                        }
+                    }
+                    Toggle(L("Mikrofon in Benutzung zählt als anwesend (Calls)"), isOn: $state.microphoneCounts)
+                    TimelineView(.periodic(from: .now, by: 15)) { context in
+                        Text(presenceStatus(context.date)).foregroundStyle(.secondary)
+                    }
                 }
+            } header: {
+                Text(L("Erkennen"))
+            } footer: {
+                Text(L("zeyt merkt sich, wann du am Mac bist: Maus, Tastatur und laufendes Mikrofon zählen, gesperrter Bildschirm und Ruhezustand nicht. Kürzere Abwesenheiten als eingestellt gelten als durchgehend anwesend."))
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {

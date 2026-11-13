@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "p. ex. « Toujours imputer les réunions sur #interne, commentaires en anglais, demander avant chaque modification. »";
 "Hinweise für den Agent" = "Instructions pour l’agent";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "L’agent les lit avec le guide en se connectant ; elles priment sur les règles par défaut. Rien que pour toi, elles restent en local.";
-"Zeitleiste über die ganze Anwesenheit" = "Frise sur toute la présence";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "La barre au-dessus des entrées va de ta première à ta dernière présence de la journée, et pas seulement de la première à la dernière entrée.";
 "%@ · neuer Eintrag" = "%@ · nouvelle entrée";
+"Zeitleiste" = "Frise chronologique";
+"Auflösung" = "Résolution";
+"Einschalten" = "Activer";
+"Über die ganze Anwesenheit des Tages" = "Sur toute la présence de la journée";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "Les suggestions viennent de la détection de présence.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Pointe la barre au-dessus des entrées pour voir l’heure à cette résolution. Un clic au début d’une entrée va à sa ligne ; entre deux, il ajoute une entrée à cette heure. Avec la détection de présence, la barre peut aller de ta première à ta dernière présence.";

@@ -92,7 +92,7 @@ snap light
 type #we
 wait 300
 snap entry
-settings general
+settings reminder
 settings presence
 settings export
 labels
@@ -127,7 +127,7 @@ shot() { swift docs/make-screenshot.swift $TMP/out/*-$1.png "docs/$2.png" "${@:3
 shot light screenshot-light light popover "$TITLE"
 shot dark screenshot-dark dark popover "$TITLE"
 shot entry entry light popover "$TITLE"
-shot settings-general reminders light window "zeyt – Settings"
+shot settings-reminder reminders light window "zeyt – Settings"
 shot settings-presence presence light window "zeyt – Settings"
 shot settings-export export light window "zeyt – Settings"
 shot proposal proposal light popover "$(<"$TMP/title-proposal")"

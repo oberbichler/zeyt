@@ -72,6 +72,10 @@ final class AppState: ObservableObject {
     @Published var timelineCoversPresence = UserDefaults.standard.object(forKey: "timelineCoversPresence") as? Bool ?? true {
         didSet { UserDefaults.standard.set(timelineCoversPresence, forKey: "timelineCoversPresence") }
     }
+    /// Resolution of the day bar in minutes (hover, click to add).
+    @Published var timelineMinutes = UserDefaults.standard.object(forKey: "timelineMinutes") as? Int ?? 10 {
+        didSet { UserDefaults.standard.set(timelineMinutes, forKey: "timelineMinutes") }
+    }
     @Published var presenceKeepDays = UserDefaults.standard.object(forKey: "presenceKeepDays") as? Int ?? 60 {
         didSet { UserDefaults.standard.set(presenceKeepDays, forKey: "presenceKeepDays") }
     }

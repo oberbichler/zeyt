@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "ad es. «Riunioni sempre su #interno, commenti in inglese, chiedere prima di ogni modifica.»";
 "Hinweise für den Agent" = "Istruzioni per l’agente";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "L’agente le legge con la guida quando si connette; hanno la precedenza sulle regole predefinite. Solo per te, restano in locale.";
-"Zeitleiste über die ganze Anwesenheit" = "Linea temporale su tutta la presenza";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "La barra sopra le voci va dalla tua prima all’ultima presenza del giorno, non solo dalla prima all’ultima voce.";
 "%@ · neuer Eintrag" = "%@ · nuova voce";
+"Zeitleiste" = "Linea temporale";
+"Auflösung" = "Risoluzione";
+"Einschalten" = "Attiva";
+"Über die ganze Anwesenheit des Tages" = "Su tutta la presenza del giorno";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "I suggerimenti vengono dal rilevamento della presenza.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Punta la barra sopra le voci per vedere l’ora con questa risoluzione. Un clic all’inizio di una voce salta alla sua riga; nel mezzo aggiunge una voce a quell’ora. Con il rilevamento della presenza, la barra può andare dalla tua prima all’ultima presenza.";

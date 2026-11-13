@@ -284,6 +284,10 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "p. ej. «Reuniones siempre en #interno, comentarios en inglés, preguntar antes de cada cambio.»";
 "Hinweise für den Agent" = "Instrucciones para el agente";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "El agente las lee con la guía al conectarse; tienen prioridad sobre las reglas predeterminadas. Solo para ti, se quedan en local.";
-"Zeitleiste über die ganze Anwesenheit" = "Línea de tiempo sobre toda la presencia";
-"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "La barra sobre las entradas va desde tu primera hasta tu última presencia del día, no solo desde la primera hasta la última entrada.";
 "%@ · neuer Eintrag" = "%@ · nueva entrada";
+"Zeitleiste" = "Línea de tiempo";
+"Auflösung" = "Resolución";
+"Einschalten" = "Activar";
+"Über die ganze Anwesenheit des Tages" = "Sobre toda la presencia del día";
+"Vorschläge kommen aus der Anwesenheitserkennung." = "Las sugerencias vienen de la detección de presencia.";
+"Zeigst du auf die Leiste über den Einträgen, erscheint die Uhrzeit in dieser Auflösung. Ein Klick am Beginn eines Eintrags springt in seine Zeile, dazwischen legt er einen Eintrag zu dieser Zeit an. Mit Anwesenheitserkennung reicht die Leiste auf Wunsch von der ersten bis zur letzten Anwesenheit." = "Señala la barra sobre las entradas para ver la hora con esta resolución. Un clic al inicio de una entrada salta a su fila; entre medias, añade una entrada a esa hora. Con la detección de presencia, la barra puede ir desde tu primera hasta tu última presencia.";
