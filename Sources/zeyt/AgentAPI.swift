@@ -480,7 +480,8 @@ final class AgentAPI: ObservableObject {
                          "proposeBreaks": state.proposeBreaks, "breakMinutes": state.breakMinutes,
                          "autoBreaks": state.autoBreaks, "proposeEndOfDay": state.proposeEndOfDay,
                          "roundMinutes": state.roundMinutes, "notifications": state.proposalNotifications,
-                         "remindersFollowPresence": state.remindersFollowPresence, "keepDays": state.presenceKeepDays],
+                         "remindersFollowPresence": state.remindersFollowPresence, "keepDays": state.presenceKeepDays,
+                         "timeline": state.timelineCoversPresence],
         ])
     }
 
@@ -530,7 +531,7 @@ final class AgentAPI: ObservableObject {
         if let p = body["presence"] {
             guard let p = p as? [String: Any] else { return .error("presence must be an object", status: 400) }
             let known = ["enabled", "awayMinutes", "microphone", "proposeStart", "proposeBreaks", "breakMinutes", "autoBreaks",
-                         "proposeEndOfDay", "roundMinutes", "notifications", "remindersFollowPresence", "keepDays"]
+                         "proposeEndOfDay", "roundMinutes", "notifications", "remindersFollowPresence", "keepDays", "timeline"]
             let unknown = Set(p.keys).subtracting(known)
             if !unknown.isEmpty { errors.append("unknown presence fields: \(unknown.sorted())") }
             bool(p, "enabled") { state.presenceEnabled = $0 }
@@ -545,6 +546,7 @@ final class AgentAPI: ObservableObject {
             bool(p, "notifications") { state.proposalNotifications = $0 }
             bool(p, "remindersFollowPresence") { state.remindersFollowPresence = $0 }
             choice(p, "keepDays", AppState.keepChoices) { state.presenceKeepDays = $0 }
+            bool(p, "timeline") { state.timelineCoversPresence = $0 }
         }
         guard errors.isEmpty else { return .json(["error": errors.joined(separator: "; ")], status: 400) }
         changes.forEach { $0() }
@@ -776,7 +778,8 @@ final class AgentAPI: ObservableObject {
         Einstellungen
         GET    /api/settings   -> {reminder: {enabled, minutes, from, to, weekdaysOnly},
                  presence: {enabled, awayMinutes, microphone, proposeStart, proposeBreaks, breakMinutes, autoBreaks,
-                 proposeEndOfDay, roundMinutes, notifications, remindersFollowPresence, keepDays}}
+                 proposeEndOfDay, roundMinutes, notifications, remindersFollowPresence, keepDays, timeline}}
+                 timeline: die Zeitleiste im Popover reicht über die ganze Anwesenheit des Tages
         PATCH  /api/settings   dieselbe Form, nur die geänderten Felder; ungültige Werte -> 400 mit den erlaubten.
                  minutes: \(Reminder.intervals.map(String.init).joined(separator: ", ")); from/to: HH:mm
 

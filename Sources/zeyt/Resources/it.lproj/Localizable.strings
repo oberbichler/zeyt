@@ -284,3 +284,6 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "ad es. «Riunioni sempre su #interno, commenti in inglese, chiedere prima di ogni modifica.»";
 "Hinweise für den Agent" = "Istruzioni per l’agente";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "L’agente le legge con la guida quando si connette; hanno la precedenza sulle regole predefinite. Solo per te, restano in locale.";
+"Zeitleiste über die ganze Anwesenheit" = "Linea temporale su tutta la presenza";
+"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "La barra sopra le voci va dalla tua prima all’ultima presenza del giorno, non solo dalla prima all’ultima voce.";
+"%@ · neuer Eintrag" = "%@ · nuova voce";

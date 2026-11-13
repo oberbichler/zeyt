@@ -284,3 +284,6 @@
 "z. B. „Meetings immer auf #intern buchen, Kommentare auf Englisch, vor jeder Änderung fragen.“" = "p. ej. «Reuniones siempre en #interno, comentarios en inglés, preguntar antes de cada cambio.»";
 "Hinweise für den Agent" = "Instrucciones para el agente";
 "Der Agent liest sie beim Verbinden mit der Anleitung; sie gehen den Standardregeln vor. Nur für dich, sie bleiben lokal." = "El agente las lee con la guía al conectarse; tienen prioridad sobre las reglas predeterminadas. Solo para ti, se quedan en local.";
+"Zeitleiste über die ganze Anwesenheit" = "Línea de tiempo sobre toda la presencia";
+"Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag." = "La barra sobre las entradas va desde tu primera hasta tu última presencia del día, no solo desde la primera hasta la última entrada.";
+"%@ · neuer Eintrag" = "%@ · nueva entrada";

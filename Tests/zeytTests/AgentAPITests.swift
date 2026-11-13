@@ -13,6 +13,7 @@ import Testing
     /// AppState writes UserDefaults.standard: what the settings tests change is put back.
     let savedReminder: Reminder
     let savedAway: Int
+    let savedTimeline: Bool
 
     init() {
         store = EntryStore(directory: dir)
@@ -20,6 +21,7 @@ import Testing
         api.state = state
         savedReminder = state.reminder
         savedAway = state.awayMinutes
+        savedTimeline = state.timelineCoversPresence
     }
 
     deinit {
@@ -30,6 +32,7 @@ import Testing
     private func restore() {
         state.reminder = savedReminder
         state.awayMinutes = savedAway
+        state.timelineCoversPresence = savedTimeline
     }
 
     /// One request as it comes over the wire; returns status and parsed JSON (or the text).
@@ -226,6 +229,10 @@ import Testing
             #expect(call("PATCH", "/api/settings", bad).0 == 400, "\(bad)")
         }
         #expect(state.reminder.minutes == 45 && state.awayMinutes == 5)
+        let timeline = !state.timelineCoversPresence
+        #expect(call("PATCH", "/api/settings", ["presence": ["timeline": timeline]]).0 == 200)
+        #expect(state.timelineCoversPresence == timeline)
+        #expect(call("PATCH", "/api/settings", ["presence": ["timeline": "yes"]]).0 == 400)
     }
 
     // MARK: Proposals

@@ -238,54 +238,145 @@ struct RowAction: View {
     }
 }
 
-/// The day as one bar of its tasks and breaks, with start and end below.
+/// The day as one bar of its tasks and breaks on a linear time axis, with start and end below.
+/// Hovering shows what a click does: near the start of an entry it goes to that row, in between it
+/// creates an entry at that time (to 10 minutes).
 struct DayBar: View {
+    let timeline: Timeline
     let blocks: [Block]
+    let entries: [Entry]
     /// When the user was at the Mac that day: a thin line under the bar.
     var presence: [DateInterval] = []
+    /// The user is at the Mac right now (today): a bar that ends with the presence ends "now".
+    var presentNow = false
     /// Colour of a label.
     let color: (String) -> Color
+    var onClick: (Timeline.Target) -> Void = { _ in }
+
+    @State private var hover: Double?
+    @State private var labelWidth: CGFloat = 0
+
+    private static let barHeight: CGFloat = 6
+    /// Extra room above and below that still counts as the bar for the mouse.
+    private static let slop: CGFloat = 4
+    /// This close (points) to the start of an entry, a click goes to it.
+    private static let snapDistance: CGFloat = 6
+    @State private var width: CGFloat = 1
+
+    private func target(_ f: Double) -> Timeline.Target {
+        timeline.target(at: f, tolerance: Double(Self.snapDistance / max(1, width)), in: entries)
+    }
+
+    private func targetDate(_ t: Timeline.Target) -> Date {
+        switch t {
+        case .entry(let e): e.date
+        case .new(let d): d
+        }
+    }
 
     var body: some View {
+        let tl = timeline
         let segments = blocks.filter { $0.duration > 0 && $0.kind != .end }
-        let total = segments.reduce(0) { $0 + $1.duration }
-        let first = blocks.first!
-        let last = blocks.last!
-        let endText = last.kind == .end ? Fmt.time.string(from: last.entry.date) : (last.running ? L("jetzt") : L("offen"))
-        return VStack(spacing: 4) {
+        let height = Self.barHeight + (presence.isEmpty ? 0 : 6)
+        return VStack(spacing: 0) {
             GeometryReader { geo in
-                let available = geo.size.width - CGFloat(max(segments.count - 1, 0))
-                HStack(spacing: 1) {
-                    ForEach(segments) { b in
-                        Group {
-                            if b.kind == .pause {
-                                Hatch()
-                            } else {
-                                Rectangle().fill(color(b.entry.label))
+                let w = geo.size.width
+                ZStack(alignment: .topLeading) {
+                    ZStack(alignment: .leading) {
+                        Rectangle().fill(Color.primary.opacity(0.08))
+                        ForEach(segments) { b in
+                            let x0 = tl.fraction(b.entry.date) * w
+                            let x1 = tl.fraction(b.end ?? b.entry.date) * w
+                            Group {
+                                if b.kind == .pause { Hatch() } else { Rectangle().fill(color(b.entry.label)) }
                             }
+                            // 1 pt gap between neighbours, but never thinner than 1 pt.
+                            .frame(width: max(1, x1 - x0 - (x1 < w - 0.5 ? 1 : 0)))
+                            .offset(x: x0)
                         }
-                        .frame(width: max(1, available * b.duration / total))
-                        .help("\(Fmt.time.string(from: b.entry.date)) · \(b.kind == .pause ? L("Pause") : b.entry.label.isEmpty ? L("unverplant") : "#" + b.entry.label)")
+                    }
+                    .frame(width: w, height: Self.barHeight)
+                    .clipShape(Capsule())
+                    if !presence.isEmpty {
+                        PresenceLine(spans: presence, from: tl.start, to: tl.end)
+                            .offset(y: Self.barHeight + 4)
+                    }
+                    if let hover {
+                        Capsule().fill(Color.primary)
+                            .frame(width: 2, height: Self.barHeight + 4)
+                            .offset(x: min(max(0, tl.fraction(targetDate(target(hover))) * w - 1), w - 2), y: -2)
                     }
                 }
+                .padding(.vertical, Self.slop)
+                .frame(width: w, height: height + 2 * Self.slop, alignment: .topLeading)
+                .contentShape(Rectangle())
+                .onContinuousHover { phase in
+                    width = w
+                    switch phase {
+                    case .active(let p): hover = w > 0 ? min(1, max(0, p.x / w)) : nil
+                    case .ended: hover = nil
+                    }
+                }
+                .onTapGesture { p in
+                    guard w > 0 else { return }
+                    width = w
+                    onClick(target(min(1, max(0, p.x / w))))
+                }
             }
-            .frame(height: 6)
-            .background(Color.primary.opacity(0.08))
-            .clipShape(Capsule())
-            if !presence.isEmpty, total > 0 {
-                PresenceLine(spans: presence, from: first.entry.date, to: first.entry.date.addingTimeInterval(total))
+            .frame(height: height + 2 * Self.slop)
+            .padding(.vertical, -Self.slop)
+            .padding(.bottom, 4)
+            GeometryReader { geo in
+                if let hover {
+                    let x = tl.fraction(targetDate(target(hover))) * geo.size.width
+                    Text(hoverText(hover))
+                        .fixedSize()
+                        .background(GeometryReader { g in Color.clear.preference(key: WidthKey.self, value: g.size.width) })
+                        .offset(x: min(max(0, x - labelWidth / 2), max(0, geo.size.width - labelWidth)))
+                        .foregroundStyle(.primary)
+                } else {
+                    HStack {
+                        Text(Fmt.time.string(from: tl.start))
+                        Spacer()
+                        Text(endText)
+                    }
+                    .foregroundStyle(.secondary)
+                }
             }
-            HStack {
-                Text(Fmt.time.string(from: first.entry.date))
-                Spacer()
-                Text(endText)
-            }
+            .frame(height: 14)
             .font(.system(size: 11).monospacedDigit())
-            .foregroundStyle(.secondary)
+            .onPreferenceChange(WidthKey.self) { labelWidth = $0 }
         }
         .padding(.horizontal, 12)
         .padding(.top, 10)
         .padding(.bottom, 4)
+    }
+
+    private var endText: String {
+        // The presence reaches further than the entries.
+        if tl.entriesEnd.map({ tl.end.timeIntervalSince($0) >= 60 }) ?? true {
+            return presentNow ? L("jetzt") : Fmt.time.string(from: tl.end)
+        }
+        guard let last = blocks.last else { return Fmt.time.string(from: tl.end) }
+        return last.kind == .end ? Fmt.time.string(from: last.entry.date) : (last.running ? L("jetzt") : L("offen"))
+    }
+
+    private var tl: Timeline { timeline }
+
+    private func hoverText(_ f: Double) -> String {
+        switch target(f) {
+        case .entry(let e):
+            let what = e.isStop ? (blocks.last?.id == e.id ? L("Feierabend") : L("Pause"))
+                : e.label.isEmpty ? L("unverplant") : "#" + e.label
+            return "\(Fmt.time.string(from: e.date)) · \(what)"
+        case .new(let d):
+            return L("%@ · neuer Eintrag", Fmt.time.string(from: d))
+        }
+    }
+
+    private struct WidthKey: PreferenceKey {
+        static let defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
     }
 }
 

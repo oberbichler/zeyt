@@ -170,6 +170,13 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(L("Zeitleiste über die ganze Anwesenheit"), isOn: $state.timelineCoversPresence)
+                } footer: {
+                    Text(L("Die Leiste über den Einträgen reicht von deiner ersten bis zur letzten Anwesenheit des Tages, nicht nur vom ersten bis zum letzten Eintrag."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Section {
                     Toggle(L("Erinnerung an Anwesenheit ausrichten"), isOn: $state.remindersFollowPresence)
                 } footer: {
                     Text(L("Keine Erinnerung, solange du weg bist; der Tag beginnt mit deiner ersten Anwesenheit, und nach einer Pause läuft der Abstand neu."))
